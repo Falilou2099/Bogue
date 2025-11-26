@@ -28,7 +28,7 @@ const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { name: "Tickets", href: "/tickets", icon: Ticket, badge: 3 },
   { name: "Chat", href: "/chat", icon: MessageSquare, badge: 2 },
-  { name: "Base de connaissances", href: "/knowledge", icon: BookOpen },
+  { name: "Base de connaissances", href: "/knowledge-base", icon: BookOpen },
 ]
 
 const adminNavigation = [
@@ -37,7 +37,6 @@ const adminNavigation = [
   { name: "SLA", href: "/admin/sla", icon: Clock },
   { name: "Audit Logs", href: "/admin/audit", icon: FileText },
   { name: "Analytics", href: "/admin/analytics", icon: BarChart3 },
-  { name: "Paramètres", href: "/admin/settings", icon: Settings },
 ]
 
 export function Sidebar() {
