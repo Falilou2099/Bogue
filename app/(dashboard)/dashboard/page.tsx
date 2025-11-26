@@ -142,8 +142,8 @@ export default function DashboardPage() {
                         borderRadius: "8px",
                       }}
                     />
-                    <Bar dataKey="ouverts" fill="hsl(var(--chart-4))" radius={[4, 4, 0, 0]} name="Ouverts" />
-                    <Bar dataKey="resolus" fill="hsl(var(--chart-2))" radius={[4, 4, 0, 0]} name="Résolus" />
+                    <Bar dataKey="ouverts" fill="#10b981" radius={[4, 4, 0, 0]} name="Ouverts" />
+                    <Bar dataKey="resolus" fill="#f97316" radius={[4, 4, 0, 0]} name="Résolus" />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
