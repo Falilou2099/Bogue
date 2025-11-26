@@ -1,106 +1,82 @@
 "use client"
 
-import { createContext, useContext, useState, useCallback, type ReactNode } from "react"
-import type { User, UserRole } from "./types"
-import { mockUsers } from "./mock-data"
+import type React from "react"
+import { createContext, useContext, useState, useEffect } from "react"
+import type { User } from "./types"
 
 interface AuthContextType {
   user: User | null
-  isAuthenticated: boolean
   login: (email: string, password: string) => Promise<boolean>
   logout: () => void
-  hasPermission: (permission: string) => boolean
-  hasRole: (roles: UserRole[]) => boolean
+  hasRole: (roles: string[]) => boolean
+  isLoading: boolean
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
-const ROLE_PERMISSIONS: Record<UserRole, string[]> = {
-  demandeur: ["ticket:create", "ticket:view_own", "chat:send_public", "chat:view_own"],
-  agent: [
-    "ticket:create",
-    "ticket:view_assigned",
-    "ticket:edit_assigned",
-    "ticket:assign",
-    "chat:send_public",
-    "chat:send_internal",
-    "chat:view_all",
-    "kb:view",
-  ],
-  manager: [
-    "ticket:create",
-    "ticket:view_all",
-    "ticket:edit_all",
-    "ticket:assign",
-    "chat:view_all",
-    "chat:send_internal",
-    "dashboard:view_team",
-    "reports:view",
-    "kb:view",
-  ],
-  admin: [
-    "ticket:create",
-    "ticket:view_all",
-    "ticket:edit_all",
-    "ticket:delete",
-    "ticket:assign",
-    "chat:view_all",
-    "chat:send_internal",
-    "dashboard:view_all",
-    "reports:view",
-    "reports:export",
-    "users:manage",
-    "roles:manage",
-    "categories:manage",
-    "sla:manage",
-    "kb:manage",
-    "audit:view",
-  ],
-}
+export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const [user, setUser] = useState<User | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
 
-export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(mockUsers[0]) // Default: admin pour la démo
+  useEffect(() => {
+    checkAuth()
+  }, [])
 
-  const login = useCallback(async (email: string, _password: string): Promise<boolean> => {
-    const foundUser = mockUsers.find((u) => u.email === email)
-    if (foundUser) {
-      setUser(foundUser)
-      return true
+  const checkAuth = async () => {
+    try {
+      const response = await fetch("/api/auth/me")
+      const data = await response.json()
+
+      if (data.success && data.user) {
+        setUser(data.user)
+      }
+    } catch (error) {
+      console.error("Erreur lors de la vérification de l'authentification:", error)
+    } finally {
+      setIsLoading(false)
     }
-    return false
-  }, [])
+  }
 
-  const logout = useCallback(() => {
-    setUser(null)
-  }, [])
+  const login = async (email: string, password: string): Promise<boolean> => {
+    try {
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      })
 
-  const hasPermission = useCallback(
-    (permission: string): boolean => {
-      if (!user) return false
-      return ROLE_PERMISSIONS[user.role]?.includes(permission) ?? false
-    },
-    [user],
-  )
+      const data = await response.json()
 
-  const hasRole = useCallback(
-    (roles: UserRole[]): boolean => {
-      if (!user) return false
-      return roles.includes(user.role)
-    },
-    [user],
-  )
+      if (data.success && data.user) {
+        setUser(data.user)
+        return true
+      }
+      return false
+    } catch (error) {
+      console.error("Erreur lors de la connexion:", error)
+      return false
+    }
+  }
+
+  const logout = async () => {
+    try {
+      await fetch("/api/auth/logout", {
+        method: "POST",
+      })
+      setUser(null)
+    } catch (error) {
+      console.error("Erreur lors de la déconnexion:", error)
+    }
+  }
+
+  const hasRole = (roles: string[]) => {
+    return user ? roles.includes(user.role) : false
+  }
 
   return (
-    <AuthContext.Provider
-      value={{
-        user,
-        isAuthenticated: !!user,
-        login,
-        logout,
-        hasPermission,
-        hasRole,
-      }}
-    >
+    <AuthContext.Provider value={{ user, login, logout, hasRole, isLoading }}>
       {children}
     </AuthContext.Provider>
   )

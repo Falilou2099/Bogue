@@ -26,15 +26,30 @@ export default function LoginPage() {
     setIsLoading(true)
     setError("")
 
-    const success = await login(email, password)
+    try {
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      })
 
-    if (success) {
-      router.push("/dashboard")
-    } else {
-      setError("Email ou mot de passe incorrect")
+      const data = await response.json()
+
+      if (data.success) {
+        // Mettre à jour le contexte d'authentification
+        await login(email, password)
+        router.push("/dashboard")
+      } else {
+        setError(data.error || "Email ou mot de passe incorrect")
+      }
+    } catch (error) {
+      console.error("Erreur de connexion:", error)
+      setError("Erreur de connexion au serveur")
+    } finally {
+      setIsLoading(false)
     }
-
-    setIsLoading(false)
   }
 
   const demoLogins = [
