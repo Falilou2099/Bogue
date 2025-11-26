@@ -116,87 +116,91 @@ async function main() {
 
   // Créer les utilisateurs
   console.log("👥 Création des utilisateurs...")
-  const users = await Promise.all([
-    prisma.user.upsert({
-      where: { email: "admin@ticketflow.com" },
-      update: {},
-      create: {
-        id: "user-1",
-        email: "admin@ticketflow.com",
-        name: "Sophie Martin",
-        password: hashedPassword,
-        role: "ADMIN",
-        avatar: "/woman-admin-professional.jpg",
-        twoFactorEnabled: true,
-      },
-    }),
-    prisma.user.upsert({
-      where: { email: "manager@ticketflow.com" },
-      update: {},
-      create: {
-        id: "user-2",
-        email: "manager@ticketflow.com",
-        name: "Pierre Dubois",
-        password: hashedPassword,
-        role: "MANAGER",
-        avatar: "/man-manager-professional.jpg",
-        twoFactorEnabled: true,
-      },
-    }),
-    prisma.user.upsert({
-      where: { email: "agent@ticketflow.com" },
-      update: {},
-      create: {
-        id: "user-3",
-        email: "agent@ticketflow.com",
-        name: "Marie Leroy",
-        password: hashedPassword,
-        role: "AGENT",
-        avatar: "/woman-agent-support.jpg",
-        twoFactorEnabled: false,
-      },
-    }),
-    prisma.user.upsert({
-      where: { email: "agent2@ticketflow.com" },
-      update: {},
-      create: {
-        id: "user-4",
-        email: "agent2@ticketflow.com",
-        name: "Lucas Bernard",
-        password: hashedPassword,
-        role: "AGENT",
-        avatar: "/man-agent-support.jpg",
-        twoFactorEnabled: false,
-      },
-    }),
-    prisma.user.upsert({
-      where: { email: "client@example.com" },
-      update: {},
-      create: {
-        id: "user-5",
-        email: "client@example.com",
-        name: "Emma Petit",
-        password: hashedPassword,
-        role: "DEMANDEUR",
-        avatar: "/woman-client-user.jpg",
-        twoFactorEnabled: false,
-      },
-    }),
-    prisma.user.upsert({
-      where: { email: "client2@example.com" },
-      update: {},
-      create: {
-        id: "user-6",
-        email: "client2@example.com",
-        name: "Thomas Moreau",
-        password: hashedPassword,
-        role: "DEMANDEUR",
-        avatar: "/man-client-user.jpg",
-        twoFactorEnabled: false,
-      },
-    }),
-  ])
-  console.log(`✅ ${users.length} utilisateurs créés`)
+  const user1 = await prisma.user.upsert({
+    where: { email: "admin@ticketflow.com" },
+    update: {},
+    create: {
+      id: "user-1",
+      email: "admin@ticketflow.com",
+      name: "Sophie Martin",
+      password: hashedPassword,
+      role: "ADMIN",
+      avatar: "/woman-admin-professional.jpg",
+      twoFactorEnabled: true,
+    },
+  })
+
+  const user2 = await prisma.user.upsert({
+    where: { email: "manager@ticketflow.com" },
+    update: {},
+    create: {
+      id: "user-2",
+      email: "manager@ticketflow.com",
+      name: "Pierre Dubois",
+      password: hashedPassword,
+      role: "MANAGER",
+      avatar: "/man-manager-professional.jpg",
+      twoFactorEnabled: true,
+    },
+  })
+
+  const user3 = await prisma.user.upsert({
+    where: { email: "agent@ticketflow.com" },
+    update: {},
+    create: {
+      id: "user-3",
+      email: "agent@ticketflow.com",
+      name: "Marie Leroy",
+      password: hashedPassword,
+      role: "AGENT",
+      avatar: "/woman-agent-support.jpg",
+      twoFactorEnabled: false,
+    },
+  })
+
+  const user4 = await prisma.user.upsert({
+    where: { email: "agent2@ticketflow.com" },
+    update: {},
+    create: {
+      id: "user-4",
+      email: "agent2@ticketflow.com",
+      name: "Lucas Bernard",
+      password: hashedPassword,
+      role: "AGENT",
+      avatar: "/man-agent-support.jpg",
+      twoFactorEnabled: false,
+    },
+  })
+
+  const user5 = await prisma.user.upsert({
+    where: { email: "client@example.com" },
+    update: {},
+    create: {
+      id: "user-5",
+      email: "client@example.com",
+      name: "Emma Petit",
+      password: hashedPassword,
+      role: "DEMANDEUR",
+      avatar: "/woman-client-user.jpg",
+      twoFactorEnabled: false,
+    },
+  })
+
+  const user6 = await prisma.user.upsert({
+    where: { email: "client2@example.com" },
+    update: {},
+    create: {
+      id: "user-6",
+      email: "client2@example.com",
+      name: "Thomas Moreau",
+      password: hashedPassword,
+      role: "DEMANDEUR",
+      avatar: "/man-client-user.jpg",
+      twoFactorEnabled: false,
+    },
+  })
+
+  console.log(`✅ 6 utilisateurs créés`)
 
   // Créer les tickets
   console.log("🎫 Création des tickets...")
@@ -212,8 +216,8 @@ async function main() {
         status: "EN_COURS",
         priority: "HAUTE",
         categoryId: "cat-1",
-        createdById: "user-5",
-        assignedToId: "user-3",
+        createdById: user5.id,
+        assignedToId: user3.id,
         slaId: "sla-2",
         dueDate: new Date("2024-11-28"),
         tags: ["mobile", "authentification", "urgent"],
@@ -231,8 +235,8 @@ async function main() {
         status: "EN_ATTENTE",
         priority: "MOYENNE",
         categoryId: "cat-2",
-        createdById: "user-6",
-        assignedToId: "user-4",
+        createdById: user6.id,
+        assignedToId: user4.id,
         slaId: "sla-3",
         dueDate: new Date("2024-11-30"),
         tags: ["facturation", "remboursement"],
@@ -250,7 +254,7 @@ async function main() {
         status: "OUVERT",
         priority: "CRITIQUE",
         categoryId: "cat-1",
-        createdById: "user-5",
+        createdById: user5.id,
         slaId: "sla-1",
         dueDate: new Date("2024-11-26"),
         tags: ["paiement", "erreur-500", "critique"],
@@ -268,8 +272,8 @@ async function main() {
         status: "RESOLU",
         priority: "BASSE",
         categoryId: "cat-3",
-        createdById: "user-6",
-        assignedToId: "user-3",
+        createdById: user6.id,
+        assignedToId: user3.id,
         slaId: "sla-4",
         resolvedAt: new Date("2024-11-23"),
         tags: ["commercial", "devis", "entreprise"],
@@ -287,8 +291,8 @@ async function main() {
         status: "EN_COURS",
         priority: "MOYENNE",
         categoryId: "cat-5",
-        createdById: "user-5",
-        assignedToId: "user-4",
+        createdById: user5.id,
+        assignedToId: user4.id,
         slaId: "sla-3",
         dueDate: new Date("2024-11-29"),
         tags: ["api", "documentation", "webhooks"],
@@ -306,8 +310,8 @@ async function main() {
         status: "FERME",
         priority: "BASSE",
         categoryId: "cat-1",
-        createdById: "user-6",
-        assignedToId: "user-3",
+        createdById: user6.id,
+        assignedToId: user3.id,
         slaId: "sla-4",
         resolvedAt: new Date("2024-11-21"),
         closedAt: new Date("2024-11-22"),
@@ -325,50 +329,50 @@ async function main() {
       data: {
         id: "msg-1",
         ticketId: "TKT-001",
-        senderId: "user-5",
+        senderId: user5.id,
         content: "J'ai aussi essayé de vider le cache de l'application mais ça ne fonctionne toujours pas.",
         type: "PUBLIC",
-        readBy: ["user-5", "user-3"],
+        readBy: [user5.id, user3.id],
       },
     }),
     prisma.ticketMessage.create({
       data: {
         id: "msg-2",
         ticketId: "TKT-001",
-        senderId: "user-3",
+        senderId: user3.id,
         content: "Bonjour Emma, merci pour ces informations. Pouvez-vous me préciser la version de l'application que vous utilisez ? Vous pouvez la trouver dans Paramètres > À propos.",
         type: "PUBLIC",
-        readBy: ["user-5", "user-3"],
+        readBy: [user5.id, user3.id],
       },
     }),
     prisma.ticketMessage.create({
       data: {
         id: "msg-3",
         ticketId: "TKT-001",
-        senderId: "user-3",
+        senderId: user3.id,
         content: "Note interne: Vérifier les logs serveur pour les tentatives de connexion de cet utilisateur.",
         type: "INTERNE",
-        readBy: ["user-3", "user-2"],
+        readBy: [user3.id, user2.id],
       },
     }),
     prisma.ticketMessage.create({
       data: {
         id: "msg-4",
         ticketId: "TKT-001",
-        senderId: "user-5",
+        senderId: user5.id,
         content: "La version est 2.4.1. J'utilise un iPhone 14 Pro avec iOS 17.1.",
         type: "PUBLIC",
-        readBy: ["user-5", "user-3"],
+        readBy: [user5.id, user3.id],
       },
     }),
     prisma.ticketMessage.create({
       data: {
         id: "msg-5",
         ticketId: "TKT-001",
-        senderId: "user-3",
+        senderId: user3.id,
         content: "Merci pour ces précisions. J'ai identifié un problème connu avec la version 2.4.1 sur iOS 17. Une mise à jour corrective (2.4.2) sera disponible d'ici demain. En attendant, je vous envoie un lien pour installer une version beta qui corrige le problème.",
         type: "PUBLIC",
-        readBy: ["user-3"],
+        readBy: [user3.id],
       },
     }),
   ])
@@ -381,7 +385,7 @@ async function main() {
       data: {
         id: "hist-1",
         ticketId: "TKT-001",
-        userId: "user-5",
+        userId: user5.id,
         action: "Ticket créé",
       },
     }),
@@ -389,7 +393,7 @@ async function main() {
       data: {
         id: "hist-2",
         ticketId: "TKT-001",
-        userId: "user-2",
+        userId: user2.id,
         action: "Ticket assigné",
         newValue: "Marie Leroy",
       },
@@ -398,7 +402,7 @@ async function main() {
       data: {
         id: "hist-3",
         ticketId: "TKT-001",
-        userId: "user-3",
+        userId: user3.id,
         action: "Statut modifié",
         oldValue: "Ouvert",
         newValue: "En cours",
@@ -408,7 +412,7 @@ async function main() {
       data: {
         id: "hist-4",
         ticketId: "TKT-001",
-        userId: "user-3",
+        userId: user3.id,
         action: "Priorité modifiée",
         oldValue: "Moyenne",
         newValue: "Haute",
@@ -423,7 +427,7 @@ async function main() {
     prisma.notification.create({
       data: {
         id: "notif-1",
-        userId: "user-1",
+        userId: user1.id,
         type: "NOUVEAU_TICKET",
         title: "Nouveau ticket critique",
         message: "TKT-003: Erreur 500 sur la page de paiement",
@@ -434,7 +438,7 @@ async function main() {
     prisma.notification.create({
       data: {
         id: "notif-2",
-        userId: "user-1",
+        userId: user1.id,
         type: "SLA_ALERTE",
         title: "Alerte SLA",
         message: "Le ticket TKT-003 approche de sa date limite de réponse",
@@ -445,7 +449,7 @@ async function main() {
     prisma.notification.create({
       data: {
         id: "notif-3",
-        userId: "user-1",
+        userId: user1.id,
         type: "NOUVEAU_MESSAGE",
         title: "Nouveau message",
         message: "Emma Petit a répondu au ticket TKT-001",
@@ -456,7 +460,7 @@ async function main() {
     prisma.notification.create({
       data: {
         id: "notif-4",
-        userId: "user-1",
+        userId: user1.id,
         type: "TICKET_ASSIGNE",
         title: "Ticket assigné",
         message: "TKT-002 a été assigné à Lucas Bernard",
@@ -488,7 +492,7 @@ Un email contenant un lien de réinitialisation vous sera envoyé.
 ## Étape 4: Créer un nouveau mot de passe
 Cliquez sur le lien et définissez un nouveau mot de passe sécurisé.`,
         categoryId: "cat-4",
-        authorId: "user-1",
+        authorId: user1.id,
         views: 1250,
         helpful: 89,
         notHelpful: 5,
@@ -511,7 +515,7 @@ Toutes les requêtes doivent inclure un header Authorization avec votre clé API
 - POST /api/tickets - Créer un ticket
 - PUT /api/tickets/:id - Modifier un ticket`,
         categoryId: "cat-1",
-        authorId: "user-1",
+        authorId: user1.id,
         views: 890,
         helpful: 67,
         notHelpful: 3,
@@ -532,7 +536,7 @@ Accédez à Paramètres > Facturation pour modifier vos informations.
 ## Quels moyens de paiement acceptez-vous ?
 Nous acceptons les cartes Visa, Mastercard, et les virements bancaires.`,
         categoryId: "cat-2",
-        authorId: "user-2",
+        authorId: user2.id,
         views: 2100,
         helpful: 156,
         notHelpful: 12,
@@ -545,7 +549,7 @@ Nous acceptons les cartes Visa, Mastercard, et les virements bancaires.`,
   console.log("\n📊 Résumé des données créées:")
   console.log(`   - ${categories.length} catégories`)
   console.log(`   - ${slas.length} SLA`)
-  console.log(`   - ${users.length} utilisateurs`)
+  console.log(`   - 6 utilisateurs`)
   console.log(`   - ${tickets.length} tickets`)
   console.log(`   - ${messages.length} messages`)
   console.log(`   - ${history.length} entrées d'historique`)

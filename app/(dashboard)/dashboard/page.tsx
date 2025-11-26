@@ -33,18 +33,21 @@ export default function DashboardPage() {
   
   const [tickets, setTickets] = useState<TicketType[]>([])
   const [dashboardStats, setDashboardStats] = useState<DashboardStats | null>(null)
+  const [chartData, setChartData] = useState<any>(null)
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [ticketsRes, statsRes] = await Promise.all([
+        const [ticketsRes, statsRes, chartsRes] = await Promise.all([
           fetch("/api/tickets"),
           fetch("/api/dashboard/stats"),
+          fetch("/api/dashboard/charts"),
         ])
 
         const ticketsData = await ticketsRes.json()
         const statsData = await statsRes.json()
+        const chartsData = await chartsRes.json()
 
         if (ticketsData.success) {
           setTickets(ticketsData.tickets.slice(0, 5))
@@ -52,6 +55,10 @@ export default function DashboardPage() {
 
         if (statsData.success) {
           setDashboardStats(statsData.stats)
+        }
+
+        if (chartsData.success) {
+          setChartData(chartsData.charts)
         }
       } catch (error) {
         console.error("Erreur lors du chargement des données:", error)
@@ -95,7 +102,7 @@ export default function DashboardPage() {
     },
     {
       title: "Résolus ce mois",
-      value: mockDashboardStats.ticketsResolus,
+      value: dashboardStats?.ticketsResolus || 0,
       icon: CheckCircle,
       trend: "+23%",
       trendUp: true,
@@ -104,7 +111,7 @@ export default function DashboardPage() {
     },
     {
       title: "Respect SLA",
-      value: `${mockDashboardStats.tauxSlaRespect}%`,
+      value: `${dashboardStats?.tauxSlaRespect || 0}%`,
       icon: TrendingUp,
       trend: "+2.1%",
       trendUp: true,
@@ -112,8 +119,6 @@ export default function DashboardPage() {
       bg: "bg-primary/10",
     },
   ]
-
-  const recentTickets = mockTickets.slice(0, 5)
 
   return (
     <div className="space-y-6">
@@ -174,22 +179,28 @@ export default function DashboardPage() {
             </CardHeader>
             <CardContent>
               <div className="h-[300px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={mockChartData.ticketsParJour}>
-                    <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                    <XAxis dataKey="date" className="text-xs" />
-                    <YAxis className="text-xs" />
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: "hsl(var(--card))",
-                        border: "1px solid hsl(var(--border))",
-                        borderRadius: "8px",
-                      }}
-                    />
-                    <Bar dataKey="ouverts" fill="#10b981" radius={[4, 4, 0, 0]} name="Ouverts" />
-                    <Bar dataKey="resolus" fill="#f97316" radius={[4, 4, 0, 0]} name="Résolus" />
-                  </BarChart>
-                </ResponsiveContainer>
+                {chartData?.ticketsParJour ? (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={chartData.ticketsParJour}>
+                      <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                      <XAxis dataKey="date" className="text-xs" />
+                      <YAxis className="text-xs" />
+                      <Tooltip
+                        contentStyle={{
+                          backgroundColor: "hsl(var(--card))",
+                          border: "1px solid hsl(var(--border))",
+                          borderRadius: "8px",
+                        }}
+                      />
+                      <Bar dataKey="ouverts" fill="#f97316" radius={[4, 4, 0, 0]} name="Ouverts" />
+                      <Bar dataKey="resolus" fill="#10b981" radius={[4, 4, 0, 0]} name="Résolus" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="flex items-center justify-center h-full text-muted-foreground">
+                    Chargement...
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
@@ -202,39 +213,8 @@ export default function DashboardPage() {
                 <CardDescription>Tickets traités et taux de respect SLA</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="h-[250px]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={mockChartData.performanceEquipe}>
-                      <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                      <XAxis dataKey="mois" className="text-xs" />
-                      <YAxis yAxisId="left" className="text-xs" />
-                      <YAxis yAxisId="right" orientation="right" className="text-xs" domain={[80, 100]} />
-                      <Tooltip
-                        contentStyle={{
-                          backgroundColor: "hsl(var(--card))",
-                          border: "1px solid hsl(var(--border))",
-                          borderRadius: "8px",
-                        }}
-                      />
-                      <Legend />
-                      <Line
-                        yAxisId="left"
-                        type="monotone"
-                        dataKey="tickets"
-                        stroke="hsl(var(--chart-1))"
-                        strokeWidth={2}
-                        name="Tickets"
-                      />
-                      <Line
-                        yAxisId="right"
-                        type="monotone"
-                        dataKey="sla"
-                        stroke="hsl(var(--chart-2))"
-                        strokeWidth={2}
-                        name="SLA %"
-                      />
-                    </LineChart>
-                  </ResponsiveContainer>
+                <div className="h-[250px] flex items-center justify-center text-muted-foreground">
+                  Données disponibles prochainement
                 </div>
               </CardContent>
             </Card>
@@ -251,39 +231,47 @@ export default function DashboardPage() {
             </CardHeader>
             <CardContent>
               <div className="h-[200px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={mockChartData.ticketsParPriorite}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={50}
-                      outerRadius={80}
-                      paddingAngle={2}
-                      dataKey="value"
-                    >
-                      {mockChartData.ticketsParPriorite.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.fill} />
-                      ))}
-                    </Pie>
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: "hsl(var(--card))",
-                        border: "1px solid hsl(var(--border))",
-                        borderRadius: "8px",
-                      }}
-                    />
-                  </PieChart>
-                </ResponsiveContainer>
-              </div>
-              <div className="flex flex-wrap justify-center gap-4 mt-4">
-                {mockChartData.ticketsParPriorite.map((item) => (
-                  <div key={item.name} className="flex items-center gap-2">
-                    <div className="h-3 w-3 rounded-full" style={{ backgroundColor: item.fill }} />
-                    <span className="text-xs text-muted-foreground">{item.name}</span>
+                {chartData?.ticketsParPriorite ? (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={chartData.ticketsParPriorite}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={50}
+                        outerRadius={80}
+                        paddingAngle={2}
+                        dataKey="value"
+                      >
+                        {chartData.ticketsParPriorite.map((entry: any, index: number) => (
+                          <Cell key={`cell-${index}`} fill={entry.fill} />
+                        ))}
+                      </Pie>
+                      <Tooltip
+                        contentStyle={{
+                          backgroundColor: "hsl(var(--card))",
+                          border: "1px solid hsl(var(--border))",
+                          borderRadius: "8px",
+                        }}
+                      />
+                    </PieChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="flex items-center justify-center h-full text-muted-foreground">
+                    Chargement...
                   </div>
-                ))}
+                )}
               </div>
+              {chartData?.ticketsParPriorite && (
+                <div className="flex flex-wrap justify-center gap-4 mt-4">
+                  {chartData.ticketsParPriorite.map((item: any) => (
+                    <div key={item.name} className="flex items-center gap-2">
+                      <div className="h-3 w-3 rounded-full" style={{ backgroundColor: item.fill }} />
+                      <span className="text-xs text-muted-foreground">{item.name}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
 
@@ -295,30 +283,36 @@ export default function DashboardPage() {
                 <CardDescription>Top performers ce mois</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                {mockAgentPerformance.map((agent) => (
-                  <div key={agent.agentId} className="flex items-center gap-4">
-                    <Avatar className="h-10 w-10">
-                      <AvatarImage src={agent.agent?.avatar || "/placeholder.svg"} />
-                      <AvatarFallback>
-                        {agent.agent?.name
-                          .split(" ")
-                          .map((n) => n[0])
-                          .join("")}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate">{agent.agent?.name}</p>
-                      <div className="flex items-center gap-2 mt-1">
-                        <Progress value={agent.tauxSatisfaction} className="h-1.5 flex-1" />
-                        <span className="text-xs text-muted-foreground">{agent.tauxSatisfaction}%</span>
+                {chartData?.agentPerformance && chartData.agentPerformance.length > 0 ? (
+                  chartData.agentPerformance.map((agent: any) => (
+                    <div key={agent.agentId} className="flex items-center gap-4">
+                      <Avatar className="h-10 w-10">
+                        <AvatarImage src={agent.agent?.avatar || "/placeholder.svg"} />
+                        <AvatarFallback>
+                          {agent.agent?.name
+                            .split(" ")
+                            .map((n: string) => n[0])
+                            .join("")}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium truncate">{agent.agent?.name}</p>
+                        <div className="flex items-center gap-2 mt-1">
+                          <Progress value={agent.tauxSatisfaction} className="h-1.5 flex-1" />
+                          <span className="text-xs text-muted-foreground">{agent.tauxSatisfaction}%</span>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm font-medium">{agent.ticketsResolus}</p>
+                        <p className="text-xs text-muted-foreground">résolus</p>
                       </div>
                     </div>
-                    <div className="text-right">
-                      <p className="text-sm font-medium">{agent.ticketsResolus}</p>
-                      <p className="text-xs text-muted-foreground">résolus</p>
-                    </div>
+                  ))
+                ) : (
+                  <div className="flex items-center justify-center h-40 text-muted-foreground">
+                    Chargement...
                   </div>
-                ))}
+                )}
               </CardContent>
             </Card>
           )}
@@ -338,40 +332,46 @@ export default function DashboardPage() {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {recentTickets.map((ticket) => (
-              <Link
-                key={ticket.id}
-                href={`/tickets/${ticket.id}`}
-                className="flex items-center gap-4 p-3 rounded-lg hover:bg-accent transition-colors"
-              >
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium text-muted-foreground">{ticket.id}</span>
-                    <Badge variant="outline" className={PRIORITY_COLORS[ticket.priority]}>
-                      {PRIORITY_LABELS[ticket.priority]}
-                    </Badge>
-                    <Badge variant="outline" className={STATUS_COLORS[ticket.status]}>
-                      {STATUS_LABELS[ticket.status]}
-                    </Badge>
+            {tickets.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                Aucun ticket récent
+              </div>
+            ) : (
+              tickets.map((ticket) => (
+                <Link
+                  key={ticket.id}
+                  href={`/tickets/${ticket.id}`}
+                  className="flex items-center gap-4 p-3 rounded-lg hover:bg-accent transition-colors"
+                >
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-medium text-muted-foreground">{ticket.id}</span>
+                      <Badge variant="outline" className={PRIORITY_COLORS[ticket.priority]}>
+                        {PRIORITY_LABELS[ticket.priority]}
+                      </Badge>
+                      <Badge variant="outline" className={STATUS_COLORS[ticket.status]}>
+                        {STATUS_LABELS[ticket.status]}
+                      </Badge>
+                    </div>
+                    <p className="text-sm font-medium mt-1 truncate">{ticket.title}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      Par {ticket.createdBy?.name} • {new Date(ticket.createdAt).toLocaleDateString("fr-FR")}
+                    </p>
                   </div>
-                  <p className="text-sm font-medium mt-1 truncate">{ticket.title}</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    Par {ticket.createdBy?.name} • {new Date(ticket.createdAt).toLocaleDateString("fr-FR")}
-                  </p>
-                </div>
-                {ticket.assignedTo && (
-                  <Avatar className="h-8 w-8">
-                    <AvatarImage src={ticket.assignedTo.avatar || "/placeholder.svg"} />
-                    <AvatarFallback className="text-xs">
-                      {ticket.assignedTo.name
-                        .split(" ")
-                        .map((n) => n[0])
-                        .join("")}
-                    </AvatarFallback>
-                  </Avatar>
-                )}
-              </Link>
-            ))}
+                  {ticket.assignedTo && (
+                    <Avatar className="h-8 w-8">
+                      <AvatarImage src={ticket.assignedTo.avatar || "/placeholder.svg"} />
+                      <AvatarFallback className="text-xs">
+                        {ticket.assignedTo.name
+                          .split(" ")
+                          .map((n) => n[0])
+                          .join("")}
+                      </AvatarFallback>
+                    </Avatar>
+                  )}
+                </Link>
+              ))
+            )}
           </div>
         </CardContent>
       </Card>
