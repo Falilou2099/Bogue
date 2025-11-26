@@ -1,5 +1,6 @@
 "use client"
 
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -8,8 +9,8 @@ import { Progress } from "@/components/ui/progress"
 import { Ticket, Clock, CheckCircle, TrendingUp, ArrowUpRight, ArrowDownRight, Plus, Filter } from "lucide-react"
 import Link from "next/link"
 import { useAuth } from "@/lib/auth-context"
-import { mockTickets, mockDashboardStats, mockAgentPerformance, mockChartData } from "@/lib/mock-data"
 import { STATUS_LABELS, STATUS_COLORS, PRIORITY_LABELS, PRIORITY_COLORS } from "@/lib/constants"
+import type { Ticket as TicketType, DashboardStats } from "@/lib/types"
 import {
   BarChart,
   Bar,
@@ -29,11 +30,54 @@ import {
 export default function DashboardPage() {
   const { user, hasRole } = useAuth()
   const isAdmin = hasRole(["admin", "manager"])
+  
+  const [tickets, setTickets] = useState<TicketType[]>([])
+  const [dashboardStats, setDashboardStats] = useState<DashboardStats | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [ticketsRes, statsRes] = await Promise.all([
+          fetch("/api/tickets"),
+          fetch("/api/dashboard/stats"),
+        ])
+
+        const ticketsData = await ticketsRes.json()
+        const statsData = await statsRes.json()
+
+        if (ticketsData.success) {
+          setTickets(ticketsData.tickets.slice(0, 5))
+        }
+
+        if (statsData.success) {
+          setDashboardStats(statsData.stats)
+        }
+      } catch (error) {
+        console.error("Erreur lors du chargement des données:", error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchData()
+  }, [])
+
+  if (isLoading) {
+    return (
+      <div className="flex h-full items-center justify-center">
+        <div className="text-center">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent mx-auto" />
+          <p className="mt-4 text-muted-foreground">Chargement...</p>
+        </div>
+      </div>
+    )
+  }
 
   const stats = [
     {
       title: "Tickets Ouverts",
-      value: mockDashboardStats.ticketsOuverts,
+      value: dashboardStats?.ticketsOuverts || 0,
       icon: Ticket,
       trend: "+12%",
       trendUp: false,
@@ -42,7 +86,7 @@ export default function DashboardPage() {
     },
     {
       title: "En Cours",
-      value: mockDashboardStats.ticketsEnCours,
+      value: dashboardStats?.ticketsEnCours || 0,
       icon: Clock,
       trend: "-5%",
       trendUp: true,

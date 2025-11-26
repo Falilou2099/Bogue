@@ -1,0 +1,82 @@
+import { NextRequest, NextResponse } from "next/server"
+import { prisma } from "@/lib/prisma"
+
+export async function GET(request: NextRequest) {
+  try {
+    // Compter les tickets par statut
+    const ticketsOuverts = await prisma.ticket.count({
+      where: { status: "OUVERT" },
+    })
+
+    const ticketsEnCours = await prisma.ticket.count({
+      where: { status: "EN_COURS" },
+    })
+
+    const ticketsResolus = await prisma.ticket.count({
+      where: { status: "RESOLU" },
+    })
+
+    const ticketsFermes = await prisma.ticket.count({
+      where: { status: "FERME" },
+    })
+
+    // Calculer le temps de résolution moyen (en heures)
+    const ticketsWithTime = await prisma.ticket.findMany({
+      where: {
+        status: { in: ["RESOLU", "FERME"] },
+        resolvedAt: { not: null },
+      },
+      select: {
+        createdAt: true,
+        resolvedAt: true,
+      },
+    })
+
+    const tempsResolutionMoyen =
+      ticketsWithTime.length > 0
+        ? ticketsWithTime.reduce((acc, ticket) => {
+            const diff =
+              (ticket.resolvedAt!.getTime() - ticket.createdAt.getTime()) /
+              (1000 * 60 * 60)
+            return acc + diff
+          }, 0) / ticketsWithTime.length
+        : 0
+
+    // Calculer le taux de respect des SLA (simplifié)
+    const totalTickets = await prisma.ticket.count()
+    const ticketsRespectSLA = await prisma.ticket.count({
+      where: {
+        OR: [
+          { status: "OUVERT" },
+          { status: "EN_COURS" },
+          {
+            AND: [
+              { resolvedAt: { not: null } },
+              { dueDate: { not: null } },
+            ],
+          },
+        ],
+      },
+    })
+
+    const tauxSlaRespect =
+      totalTickets > 0 ? (ticketsRespectSLA / totalTickets) * 100 : 0
+
+    const stats = {
+      ticketsOuverts,
+      ticketsEnCours,
+      ticketsResolus,
+      ticketsFermes,
+      tempsResolutionMoyen: Math.round(tempsResolutionMoyen * 10) / 10,
+      tauxSlaRespect: Math.round(tauxSlaRespect * 10) / 10,
+    }
+
+    return NextResponse.json({ success: true, stats }, { status: 200 })
+  } catch (error) {
+    console.error("Erreur lors de la récupération des stats:", error)
+    return NextResponse.json(
+      { success: false, error: "Erreur serveur" },
+      { status: 500 }
+    )
+  }
+}
