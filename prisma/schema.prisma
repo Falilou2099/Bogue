@@ -1,0 +1,284 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ==========================================
+// Modèle User
+// ==========================================
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String
+  password  String
+  role      UserRole @default(DEMANDEUR)
+  avatar    String?
+  twoFactorEnabled Boolean @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  createdTickets    Ticket[]         @relation("CreatedTickets")
+  assignedTickets   Ticket[]         @relation("AssignedTickets")
+  messages          TicketMessage[]
+  ticketHistory     TicketHistory[]
+  notifications     Notification[]
+  articles          Article[]
+  chatParticipants  ChatParticipant[]
+
+  @@map("users")
+}
+
+enum UserRole {
+  DEMANDEUR
+  AGENT
+  MANAGER
+  ADMIN
+}
+
+// ==========================================
+// Modèle Category
+// ==========================================
+model Category {
+  id          String    @id @default(cuid())
+  name        String
+  description String?
+  parentId    String?
+  defaultSlaId String?
+  createdAt   DateTime  @default(now())
+
+  // Relations
+  parent      Category?  @relation("CategoryHierarchy", fields: [parentId], references: [id])
+  children    Category[] @relation("CategoryHierarchy")
+  defaultSla  SLA?       @relation(fields: [defaultSlaId], references: [id])
+  tickets     Ticket[]
+  articles    Article[]
+
+  @@map("categories")
+}
+
+// ==========================================
+// Modèle SLA
+// ==========================================
+model SLA {
+  id                String         @id @default(cuid())
+  name              String
+  priority          TicketPriority
+  responseTime      Int            // en minutes
+  resolutionTime    Int            // en minutes
+  escalationEnabled Boolean        @default(false)
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+
+  // Relations
+  tickets           Ticket[]
+  categories        Category[]
+
+  @@map("slas")
+}
+
+enum TicketPriority {
+  BASSE
+  MOYENNE
+  HAUTE
+  CRITIQUE
+}
+
+// ==========================================
+// Modèle Ticket
+// ==========================================
+model Ticket {
+  id          String       @id @default(cuid())
+  title       String
+  description String       @db.Text
+  type        TicketType
+  status      TicketStatus @default(OUVERT)
+  priority    TicketPriority
+  categoryId  String
+  createdById String
+  assignedToId String?
+  slaId       String?
+  dueDate     DateTime?
+  resolvedAt  DateTime?
+  closedAt    DateTime?
+  timeSpent   Int          @default(0) // en minutes
+  tags        String[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  // Relations
+  category    Category          @relation(fields: [categoryId], references: [id])
+  createdBy   User              @relation("CreatedTickets", fields: [createdById], references: [id])
+  assignedTo  User?             @relation("AssignedTickets", fields: [assignedToId], references: [id])
+  sla         SLA?              @relation(fields: [slaId], references: [id])
+  messages    TicketMessage[]
+  history     TicketHistory[]
+  attachments Attachment[]
+  notifications Notification[]
+  chatParticipants ChatParticipant[]
+
+  @@map("tickets")
+}
+
+enum TicketType {
+  INCIDENT
+  DEMANDE
+  CHANGEMENT
+}
+
+enum TicketStatus {
+  OUVERT
+  EN_COURS
+  EN_ATTENTE
+  RESOLU
+  FERME
+}
+
+// ==========================================
+// Modèle TicketMessage
+// ==========================================
+model TicketMessage {
+  id        String   @id @default(cuid())
+  ticketId  String
+  senderId  String
+  content   String   @db.Text
+  type      MessageType
+  readBy    String[]
+  createdAt DateTime @default(now())
+
+  // Relations
+  ticket      Ticket       @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  sender      User         @relation(fields: [senderId], references: [id])
+  attachments Attachment[]
+
+  @@map("ticket_messages")
+}
+
+enum MessageType {
+  PUBLIC
+  INTERNE
+}
+
+// ==========================================
+// Modèle TicketHistory
+// ==========================================
+model TicketHistory {
+  id        String   @id @default(cuid())
+  ticketId  String
+  userId    String
+  action    String
+  oldValue  String?
+  newValue  String?
+  createdAt DateTime @default(now())
+
+  // Relations
+  ticket Ticket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id])
+
+  @@map("ticket_history")
+}
+
+// ==========================================
+// Modèle Attachment
+// ==========================================
+model Attachment {
+  id        String   @id @default(cuid())
+  fileName  String
+  fileType  String
+  fileSize  Int
+  url       String
+  ticketId  String?
+  messageId String?
+  uploadedById String
+  createdAt DateTime @default(now())
+
+  // Relations
+  ticket  Ticket?        @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  message TicketMessage? @relation(fields: [messageId], references: [id], onDelete: Cascade)
+
+  @@map("attachments")
+}
+
+// ==========================================
+// Modèle Notification
+// ==========================================
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  type      NotificationType
+  title     String
+  message   String
+  ticketId  String?
+  read      Boolean          @default(false)
+  createdAt DateTime         @default(now())
+
+  // Relations
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ticket Ticket? @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+
+  @@map("notifications")
+}
+
+enum NotificationType {
+  NOUVEAU_TICKET
+  TICKET_ASSIGNE
+  CHANGEMENT_STATUT
+  NOUVEAU_MESSAGE
+  TICKET_FERME
+  SLA_ALERTE
+}
+
+// ==========================================
+// Modèle Article (Base de connaissances)
+// ==========================================
+model Article {
+  id          String   @id @default(cuid())
+  title       String
+  content     String   @db.Text
+  categoryId  String
+  authorId    String
+  views       Int      @default(0)
+  helpful     Int      @default(0)
+  notHelpful  Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  category Category @relation(fields: [categoryId], references: [id])
+  author   User     @relation(fields: [authorId], references: [id])
+
+  @@map("articles")
+}
+
+// ==========================================
+// Modèle ChatParticipant
+// ==========================================
+model ChatParticipant {
+  id         String   @id @default(cuid())
+  ticketId   String
+  userId     String
+  role       ParticipantRole
+  joinedAt   DateTime @default(now())
+  lastSeenAt DateTime @default(now())
+
+  // Relations
+  ticket Ticket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id])
+
+  @@unique([ticketId, userId])
+  @@map("chat_participants")
+}
+
+enum ParticipantRole {
+  DEMANDEUR
+  AGENT
+  SUPERVISEUR
+}
