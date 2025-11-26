@@ -1,5 +1,30 @@
-import { redirect } from "next/navigation"
+"use client"
+
+import { useEffect } from "react"
+import { useRouter } from "next/navigation"
+import { useAuth } from "@/lib/auth-context"
 
 export default function HomePage() {
-  redirect("/dashboard")
+  const router = useRouter()
+  const { user, isLoading } = useAuth()
+
+  useEffect(() => {
+    if (!isLoading) {
+      if (user) {
+        router.push("/dashboard")
+      } else {
+        router.push("/login")
+      }
+    }
+  }, [user, isLoading, router])
+
+  // Afficher un loader pendant la vérification
+  return (
+    <div className="flex h-screen items-center justify-center">
+      <div className="text-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent mx-auto" />
+        <p className="mt-4 text-muted-foreground">Chargement...</p>
+      </div>
+    </div>
+  )
 }
