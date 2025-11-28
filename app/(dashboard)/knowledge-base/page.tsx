@@ -75,7 +75,6 @@ export default function KnowledgeBasePage() {
   const [activeTab, setActiveTab] = useState("all")
   const [articles, setArticles] = useState<Article[]>([])
   const [categories, setCategories] = useState<Category[]>([])
-  const [isLoading, setIsLoading] = useState(true)
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
 
   useEffect(() => {
@@ -108,8 +107,6 @@ export default function KnowledgeBasePage() {
         }
       } catch (error) {
         console.error("Erreur lors du chargement:", error)
-      } finally {
-        setIsLoading(false)
       }
     }
 
@@ -127,17 +124,6 @@ export default function KnowledgeBasePage() {
   })
 
   const popularArticles = [...articles].sort((a, b) => b.views - a.views).slice(0, 5)
-
-  if (isLoading) {
-    return (
-      <div className="flex h-full items-center justify-center">
-        <div className="text-center">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent mx-auto" />
-          <p className="mt-4 text-muted-foreground">Chargement...</p>
-        </div>
-      </div>
-    )
-  }
 
   return (
     <div className="space-y-6">

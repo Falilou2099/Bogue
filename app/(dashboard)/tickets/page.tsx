@@ -16,7 +16,6 @@ export default function TicketsPage() {
   const [tickets, setTickets] = useState<Ticket[]>([])
   const [searchQuery, setSearchQuery] = useState("")
   const [activeTab, setActiveTab] = useState("tous")
-  const [isLoading, setIsLoading] = useState(true)
   const [viewMode, setViewMode] = useState<"all" | "my">("all")
   const [showFilters, setShowFilters] = useState(false)
   const [displayMode, setDisplayMode] = useState<"grid" | "list">("grid")
@@ -33,9 +32,8 @@ export default function TicketsPage() {
         if (data.success) {
           setTickets(data.tickets)
         }
-        setIsLoading(false)
       })
-      .catch(() => setIsLoading(false))
+      .catch(() => {})
   }, [])
 
   const filteredTickets = tickets.filter((ticket) => {
@@ -75,17 +73,6 @@ export default function TicketsPage() {
 
     return true
   })
-
-  if (isLoading) {
-    return (
-      <div className="flex h-full items-center justify-center">
-        <div className="text-center">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent mx-auto" />
-          <p className="mt-4 text-muted-foreground">Chargement...</p>
-        </div>
-      </div>
-    )
-  }
 
   return (
     <div className="space-y-6">

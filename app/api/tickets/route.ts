@@ -43,11 +43,29 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    // Vérifier l'authentification
+    const token = request.cookies.get("auth-token")?.value
+
+    if (!token) {
+      return NextResponse.json(
+        { success: false, error: "Non authentifié" },
+        { status: 401 }
+      )
+    }
+
+    const { jwtVerify } = await import("jose")
+    const JWT_SECRET = new TextEncoder().encode(
+      process.env.NEXTAUTH_SECRET || "votre-secret-jwt-super-securise-changez-moi"
+    )
+    
+    const { payload } = await jwtVerify(token, JWT_SECRET)
+    const userId = payload.userId as string
+
     const body = await request.json()
-    const { title, description, type, priority, categoryId, createdById } = body
+    const { title, description, type, priority, categoryId } = body
 
     // Validation des champs requis
-    if (!title || !description || !type || !priority || !categoryId || !createdById) {
+    if (!title || !description || !type || !priority || !categoryId) {
       return NextResponse.json(
         { success: false, error: "Tous les champs sont requis" },
         { status: 400 }
@@ -75,7 +93,7 @@ export async function POST(request: NextRequest) {
         priority,
         status: "OUVERT",
         categoryId,
-        createdById,
+        createdById: userId,
         slaId,
         tags: [],
       },
@@ -86,11 +104,11 @@ export async function POST(request: NextRequest) {
       },
     })
 
-    // Créer une notification pour les agents
+    // Créer une notification pour l'utilisateur
     await prisma.notification.createMany({
       data: [
         {
-          userId: createdById,
+          userId: userId,
           type: "NOUVEAU_TICKET",
           title: "Ticket créé",
           message: `Votre ticket #${ticket.id} a été créé avec succès`,
@@ -103,7 +121,7 @@ export async function POST(request: NextRequest) {
     await prisma.ticketHistory.create({
       data: {
         ticketId: ticket.id,
-        userId: createdById,
+        userId: userId,
         action: "CREATION",
         newValue: "Ticket créé",
       },

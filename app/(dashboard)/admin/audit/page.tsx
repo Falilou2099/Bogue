@@ -28,7 +28,6 @@ interface AuditLog {
 
 export default function AuditPage() {
   const [logs, setLogs] = useState<AuditLog[]>([])
-  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
     fetchAuditLogs()
@@ -45,8 +44,6 @@ export default function AuditPage() {
       }
     } catch (error) {
       console.error("Erreur lors de la récupération des logs:", error)
-    } finally {
-      setIsLoading(false)
     }
   }
 
@@ -72,17 +69,6 @@ export default function AuditPage() {
       FERMETURE: "bg-red-500",
     }
     return colors[action] || "bg-gray-400"
-  }
-
-  if (isLoading) {
-    return (
-      <div className="flex h-full items-center justify-center">
-        <div className="text-center">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent mx-auto" />
-          <p className="mt-4 text-muted-foreground">Chargement des logs...</p>
-        </div>
-      </div>
-    )
   }
 
   return (

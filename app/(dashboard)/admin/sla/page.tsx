@@ -27,7 +27,6 @@ interface SLA {
 
 export default function SLAPage() {
   const [slas, setSlas] = useState<SLA[]>([])
-  const [isLoading, setIsLoading] = useState(true)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editData, setEditData] = useState<SLA | null>(null)
 
@@ -46,8 +45,6 @@ export default function SLAPage() {
       }
     } catch (error) {
       console.error("Erreur lors de la récupération des SLAs:", error)
-    } finally {
-      setIsLoading(false)
     }
   }
 
@@ -93,17 +90,6 @@ export default function SLAPage() {
     const hours = Math.floor(minutes / 60)
     const mins = minutes % 60
     return mins > 0 ? `${hours}h ${mins}min` : `${hours}h`
-  }
-
-  if (isLoading) {
-    return (
-      <div className="flex h-full items-center justify-center">
-        <div className="text-center">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent mx-auto" />
-          <p className="mt-4 text-muted-foreground">Chargement des SLAs...</p>
-        </div>
-      </div>
-    )
   }
 
   return (

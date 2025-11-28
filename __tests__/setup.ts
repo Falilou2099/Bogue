@@ -1,26 +1,22 @@
 // Polyfills pour Node.js
-import { TextEncoder, TextDecoder } from 'util'
-import { ReadableStream, TransformStream } from 'stream/web'
+const { TextEncoder, TextDecoder } = require('util')
+const { ReadableStream, TransformStream } = require('stream/web')
+const { MessageChannel, MessagePort } = require('worker_threads')
 
+// Définir tous les polyfills nécessaires AVANT d'importer undici
 global.TextEncoder = TextEncoder
-global.TextDecoder = TextDecoder as any
-global.ReadableStream = ReadableStream as any
-global.TransformStream = TransformStream as any
+global.TextDecoder = TextDecoder
+global.ReadableStream = ReadableStream
+global.TransformStream = TransformStream
+global.MessageChannel = MessageChannel
+global.MessagePort = MessagePort
 
-// Mock Request et Response pour Next.js
-if (typeof global.Request === 'undefined') {
-  global.Request = class Request {
-    constructor(public url: string, public init?: RequestInit) {}
-    json() { return Promise.resolve(this.init?.body ? JSON.parse(this.init.body as string) : {}) }
-    text() { return Promise.resolve(this.init?.body as string || '') }
-    headers = new Map()
-  } as any
-}
+// Maintenant on peut importer undici
+const { fetch, Request, Response, Headers, FormData } = require('undici')
 
-if (typeof global.Response === 'undefined') {
-  global.Response = class Response {
-    constructor(public body: any, public init?: ResponseInit) {}
-    json() { return Promise.resolve(this.body) }
-    text() { return Promise.resolve(String(this.body)) }
-  } as any
-}
+// Polyfill fetch API pour les tests
+global.fetch = fetch
+global.Request = Request
+global.Response = Response
+global.Headers = Headers
+global.FormData = FormData

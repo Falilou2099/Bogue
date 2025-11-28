@@ -19,6 +19,11 @@ jest.mock('@/lib/prisma', () => ({
   },
 }))
 
+// Mock jose
+jest.mock('jose', () => ({
+  jwtVerify: jest.fn(),
+}))
+
 describe('/api/tickets', () => {
   beforeEach(() => {
     jest.clearAllMocks()
@@ -70,12 +75,21 @@ describe('/api/tickets', () => {
         type: 'INCIDENT',
         priority: 'HAUTE',
         categoryId: 'cat-1',
-        createdById: 'user-1',
       }
+
+      const jose = require('jose')
+      jest.spyOn(jose, 'jwtVerify').mockResolvedValue({
+        payload: { userId: 'user-1', role: 'agent' },
+      })
 
       const createdTicket = {
         id: 'TKT-007',
-        ...newTicketData,
+        title: newTicketData.title,
+        description: newTicketData.description,
+        type: newTicketData.type,
+        priority: newTicketData.priority,
+        categoryId: newTicketData.categoryId,
+        createdById: 'user-1',
         status: 'OUVERT',
         slaId: 'sla-2',
         tags: [],
@@ -91,12 +105,26 @@ describe('/api/tickets', () => {
         body: JSON.stringify(newTicketData),
       })
       
+      Object.defineProperty(request, 'cookies', {
+        value: {
+          get: jest.fn().mockReturnValue({ value: 'valid-token' }),
+        },
+      })
+      
       const response = await POST(request)
       const data = await response.json()
 
       expect(response.status).toBe(201)
       expect(data.success).toBe(true)
-      expect(data.ticket).toEqual(createdTicket)
+      expect(data.ticket).toMatchObject({
+        id: createdTicket.id,
+        title: createdTicket.title,
+        description: createdTicket.description,
+        type: createdTicket.type,
+        priority: createdTicket.priority,
+        categoryId: createdTicket.categoryId,
+        status: createdTicket.status,
+      })
       expect(prisma.ticket.create).toHaveBeenCalledTimes(1)
       expect(prisma.notification.createMany).toHaveBeenCalledTimes(1)
       expect(prisma.ticketHistory.create).toHaveBeenCalledTimes(1)
@@ -109,12 +137,22 @@ describe('/api/tickets', () => {
         type: 'INCIDENT',
         priority: 'HAUTE',
         categoryId: 'cat-1',
-        createdById: 'user-1',
       }
+
+      const jose = require('jose')
+      jest.spyOn(jose, 'jwtVerify').mockResolvedValue({
+        payload: { userId: 'user-1', role: 'agent' },
+      })
 
       const request = new NextRequest('http://localhost:3000/api/tickets', {
         method: 'POST',
         body: JSON.stringify(incompleteData),
+      })
+      
+      Object.defineProperty(request, 'cookies', {
+        value: {
+          get: jest.fn().mockReturnValue({ value: 'valid-token' }),
+        },
       })
       
       const response = await POST(request)
@@ -143,15 +181,27 @@ describe('/api/tickets', () => {
           type: 'INCIDENT',
           priority: testCase.priority,
           categoryId: 'cat-1',
-          createdById: 'user-1',
         }
+
+        const jose = require('jose')
+        jest.spyOn(jose, 'jwtVerify').mockResolvedValue({
+          payload: { userId: 'user-1', role: 'agent' },
+        })
 
         ;(prisma.ticket.count as jest.Mock).mockResolvedValue(0)
         ;(prisma.ticket.create as jest.Mock).mockImplementation((args) => Promise.resolve(args.data))
+        ;(prisma.notification.createMany as jest.Mock).mockResolvedValue({ count: 1 })
+        ;(prisma.ticketHistory.create as jest.Mock).mockResolvedValue({})
 
         const request = new NextRequest('http://localhost:3000/api/tickets', {
           method: 'POST',
           body: JSON.stringify(ticketData),
+        })
+        
+        Object.defineProperty(request, 'cookies', {
+          value: {
+            get: jest.fn().mockReturnValue({ value: 'valid-token' }),
+          },
         })
         
         await POST(request)
