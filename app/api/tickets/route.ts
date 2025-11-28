@@ -40,3 +40,84 @@ export async function GET(request: NextRequest) {
     )
   }
 }
+
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json()
+    const { title, description, type, priority, categoryId, createdById } = body
+
+    // Validation des champs requis
+    if (!title || !description || !type || !priority || !categoryId || !createdById) {
+      return NextResponse.json(
+        { success: false, error: "Tous les champs sont requis" },
+        { status: 400 }
+      )
+    }
+
+    // Déterminer le SLA en fonction de la priorité
+    let slaId = "sla-3" // Par défaut MOYENNE
+    switch(priority) {
+      case "CRITIQUE": slaId = "sla-1"; break;
+      case "HAUTE": slaId = "sla-2"; break;
+      case "BASSE": slaId = "sla-4"; break;
+    }
+
+    // Générer un ID de ticket unique
+    const ticketCount = await prisma.ticket.count()
+    const ticketId = `TKT-${String(ticketCount + 1).padStart(3, '0')}`
+
+    const ticket = await prisma.ticket.create({
+      data: {
+        id: ticketId,
+        title,
+        description,
+        type,
+        priority,
+        status: "OUVERT",
+        categoryId,
+        createdById,
+        slaId,
+        tags: [],
+      },
+      include: {
+        category: true,
+        createdBy: true,
+        sla: true,
+      },
+    })
+
+    // Créer une notification pour les agents
+    await prisma.notification.createMany({
+      data: [
+        {
+          userId: createdById,
+          type: "NOUVEAU_TICKET",
+          title: "Ticket créé",
+          message: `Votre ticket #${ticket.id} a été créé avec succès`,
+          ticketId: ticket.id,
+        },
+      ],
+    })
+
+    // Créer une entrée dans l'historique
+    await prisma.ticketHistory.create({
+      data: {
+        ticketId: ticket.id,
+        userId: createdById,
+        action: "CREATION",
+        newValue: "Ticket créé",
+      },
+    })
+
+    return NextResponse.json(
+      { success: true, ticket },
+      { status: 201 }
+    )
+  } catch (error) {
+    console.error("Erreur lors de la création du ticket:", error)
+    return NextResponse.json(
+      { success: false, error: "Erreur lors de la création du ticket" },
+      { status: 500 }
+    )
+  }
+}

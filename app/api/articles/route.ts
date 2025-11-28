@@ -30,3 +30,48 @@ export async function GET(request: NextRequest) {
     )
   }
 }
+
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json()
+    const { title, content, excerpt, categoryId, authorId, tags } = body
+
+    if (!title || !content || !categoryId || !authorId) {
+      return NextResponse.json(
+        { success: false, error: "Titre, contenu, catégorie et auteur sont requis" },
+        { status: 400 }
+      )
+    }
+
+    const article = await prisma.article.create({
+      data: {
+        title,
+        content,
+        categoryId,
+        authorId,
+      },
+      include: {
+        category: true,
+        author: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            avatar: true,
+          },
+        },
+      },
+    })
+
+    return NextResponse.json(
+      { success: true, article },
+      { status: 201 }
+    )
+  } catch (error) {
+    console.error("Erreur lors de la création de l'article:", error)
+    return NextResponse.json(
+      { success: false, error: "Erreur lors de la création" },
+      { status: 500 }
+    )
+  }
+}

@@ -5,14 +5,14 @@
 // Rôles utilisateurs
 export type UserRole = "demandeur" | "agent" | "manager" | "admin"
 
-// Statuts des tickets
-export type TicketStatus = "ouvert" | "en_cours" | "en_attente" | "resolu" | "ferme"
+// Statuts des tickets (conformes au schéma Prisma)
+export type TicketStatus = "OUVERT" | "EN_COURS" | "EN_ATTENTE" | "RESOLU" | "FERME"
 
-// Priorités des tickets
-export type TicketPriority = "basse" | "moyenne" | "haute" | "critique"
+// Priorités des tickets (conformes au schéma Prisma)
+export type TicketPriority = "BASSE" | "MOYENNE" | "HAUTE" | "CRITIQUE"
 
-// Types de tickets
-export type TicketType = "incident" | "demande" | "changement"
+// Types de tickets (conformes au schéma Prisma)
+export type TicketType = "INCIDENT" | "DEMANDE" | "CHANGEMENT"
 
 // ==========================================
 // Interfaces Utilisateur
@@ -193,26 +193,6 @@ export interface Article {
   updatedAt: Date
 }
 
-// ==========================================
-// Interfaces Chat temps réel
-// ==========================================
-
-export interface ChatParticipant {
-  id: string
-  ticketId: string
-  userId: string
-  user?: User
-  role: "demandeur" | "agent" | "superviseur"
-  joinedAt: Date
-  lastSeenAt: Date
-}
-
-export interface TypingIndicator {
-  ticketId: string
-  userId: string
-  userName: string
-  isTyping: boolean
-}
 
 // ==========================================
 // Interfaces API Response
