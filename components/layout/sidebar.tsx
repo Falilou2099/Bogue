@@ -11,7 +11,6 @@ import { useAuth } from "@/lib/auth-context"
 import {
   LayoutDashboard,
   Ticket,
-  MessageSquare,
   Users,
   Settings,
   BarChart3,
@@ -27,7 +26,6 @@ import {
 const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { name: "Tickets", href: "/tickets", icon: Ticket, badge: 3 },
-  { name: "Chat", href: "/chat", icon: MessageSquare, badge: 2 },
   { name: "Base de connaissances", href: "/knowledge-base", icon: BookOpen },
 ]
 

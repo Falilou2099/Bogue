@@ -31,7 +31,6 @@ model User {
   ticketHistory     TicketHistory[]
   notifications     Notification[]
   articles          Article[]
-  chatParticipants  ChatParticipant[]
 
   @@map("users")
 }
@@ -122,7 +121,6 @@ model Ticket {
   history     TicketHistory[]
   attachments Attachment[]
   notifications Notification[]
-  chatParticipants ChatParticipant[]
 
   @@map("tickets")
 }
@@ -257,27 +255,3 @@ model Article {
   @@map("articles")
 }
 
-// ==========================================
-// Modèle ChatParticipant
-// ==========================================
-model ChatParticipant {
-  id         String   @id @default(cuid())
-  ticketId   String
-  userId     String
-  role       ParticipantRole
-  joinedAt   DateTime @default(now())
-  lastSeenAt DateTime @default(now())
-
-  // Relations
-  ticket Ticket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
-  user   User   @relation(fields: [userId], references: [id])
-
-  @@unique([ticketId, userId])
-  @@map("chat_participants")
-}
-
-enum ParticipantRole {
-  DEMANDEUR
-  AGENT
-  SUPERVISEUR
-}

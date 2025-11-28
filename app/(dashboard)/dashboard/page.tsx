@@ -128,18 +128,12 @@ export default function DashboardPage() {
           <h1 className="text-2xl font-bold tracking-tight">Bonjour, {user?.name.split(" ")[0]}</h1>
           <p className="text-muted-foreground">Voici un aperçu de votre activité aujourd'hui</p>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm">
-            <Filter className="mr-2 h-4 w-4" />
-            Filtres
-          </Button>
-          <Button size="sm" asChild>
-            <Link href="/tickets/new">
-              <Plus className="mr-2 h-4 w-4" />
-              Nouveau ticket
-            </Link>
-          </Button>
-        </div>
+        <Button size="sm" asChild>
+          <Link href="/tickets/new">
+            <Plus className="mr-2 h-4 w-4" />
+            Nouveau ticket
+          </Link>
+        </Button>
       </div>
 
       {/* Stats Cards */}
