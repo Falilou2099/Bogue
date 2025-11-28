@@ -55,12 +55,38 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    // Vérifier l'authentification
+    const token = request.cookies.get("auth-token")?.value
+
+    if (!token) {
+      return NextResponse.json(
+        { success: false, error: "Non authentifié" },
+        { status: 401 }
+      )
+    }
+
+    // Vérifier le rôle (seuls les admins peuvent créer des catégories)
+    const { jwtVerify } = await import("jose")
+    const JWT_SECRET = new TextEncoder().encode(
+      process.env.NEXTAUTH_SECRET || "votre-secret-jwt-super-securise-changez-moi"
+    )
+    
+    const { payload } = await jwtVerify(token, JWT_SECRET)
+    const userRole = (payload.role as string)?.toLowerCase()
+
+    if (userRole !== "admin") {
+      return NextResponse.json(
+        { success: false, error: "Permissions insuffisantes" },
+        { status: 403 }
+      )
+    }
+
     const body = await request.json()
     const { name, description } = body
 
-    if (!name) {
+    if (!name || !description) {
       return NextResponse.json(
-        { success: false, error: "Le nom est requis" },
+        { success: false, error: "Nom et description requis" },
         { status: 400 }
       )
     }
@@ -68,7 +94,7 @@ export async function POST(request: NextRequest) {
     const category = await prisma.category.create({
       data: {
         name,
-        description: description || null,
+        description,
       },
     })
 

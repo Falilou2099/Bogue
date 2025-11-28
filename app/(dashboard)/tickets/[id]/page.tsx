@@ -50,7 +50,6 @@ export default function TicketDetailPage() {
 
   const [ticket, setTicket] = useState<Ticket | null>(null)
   const [history, setHistory] = useState<TicketHistory[]>([])
-  const [isLoading, setIsLoading] = useState(true)
   const [comment, setComment] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [categories, setCategories] = useState<any[]>([])

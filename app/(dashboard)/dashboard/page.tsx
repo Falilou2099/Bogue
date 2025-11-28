@@ -34,7 +34,6 @@ export default function DashboardPage() {
   const [tickets, setTickets] = useState<TicketType[]>([])
   const [dashboardStats, setDashboardStats] = useState<DashboardStats | null>(null)
   const [chartData, setChartData] = useState<any>(null)
-  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
     const fetchData = async () => {
@@ -62,24 +61,11 @@ export default function DashboardPage() {
         }
       } catch (error) {
         console.error("Erreur lors du chargement des données:", error)
-      } finally {
-        setIsLoading(false)
-      }
+      } finally {}
     }
 
     fetchData()
   }, [])
-
-  if (isLoading) {
-    return (
-      <div className="flex h-full items-center justify-center">
-        <div className="text-center">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent mx-auto" />
-          <p className="mt-4 text-muted-foreground">Chargement...</p>
-        </div>
-      </div>
-    )
-  }
 
   const stats = [
     {

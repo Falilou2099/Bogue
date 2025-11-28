@@ -38,7 +38,6 @@ interface AnalyticsData {
 
 export default function AnalyticsPage() {
   const [data, setData] = useState<AnalyticsData | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
     fetchAnalytics()
@@ -55,20 +54,11 @@ export default function AnalyticsPage() {
       }
     } catch (error) {
       console.error("Erreur lors de la récupération des analytics:", error)
-    } finally {
-      setIsLoading(false)
     }
   }
 
-  if (isLoading || !data) {
-    return (
-      <div className="flex h-full items-center justify-center">
-        <div className="text-center">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent mx-auto" />
-          <p className="mt-4 text-muted-foreground">Chargement des analytics...</p>
-        </div>
-      </div>
-    )
+  if (!data) {
+    return null
   }
 
   const statusData = [

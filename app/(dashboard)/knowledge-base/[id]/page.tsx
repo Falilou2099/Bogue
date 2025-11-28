@@ -22,7 +22,6 @@ export default function ArticlePage() {
   const params = useParams()
   const router = useRouter()
   const [article, setArticle] = useState<Article | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
@@ -35,25 +34,12 @@ export default function ArticlePage() {
           } else {
             setError(data.error || "Article non trouvé")
           }
-          setIsLoading(false)
         })
         .catch(() => {
           setError("Erreur lors du chargement de l'article")
-          setIsLoading(false)
         })
     }
   }, [params.id])
-
-  if (isLoading) {
-    return (
-      <div className="flex h-full items-center justify-center">
-        <div className="text-center">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent mx-auto" />
-          <p className="mt-4 text-muted-foreground">Chargement...</p>
-        </div>
-      </div>
-    )
-  }
 
   if (error || !article) {
     return (

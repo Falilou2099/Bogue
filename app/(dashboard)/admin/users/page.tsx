@@ -40,7 +40,6 @@ interface User {
 export default function UsersPage() {
   const [users, setUsers] = useState<User[]>([])
   const [searchQuery, setSearchQuery] = useState("")
-  const [isLoading, setIsLoading] = useState(true)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [editingUser, setEditingUser] = useState<User | null>(null)
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
@@ -66,8 +65,6 @@ export default function UsersPage() {
       }
     } catch (error) {
       console.error("Erreur lors du chargement des utilisateurs:", error)
-    } finally {
-      setIsLoading(false)
     }
   }
 
@@ -152,17 +149,6 @@ export default function UsersPage() {
       default:
         return "Demandeur"
     }
-  }
-
-  if (isLoading) {
-    return (
-      <div className="flex h-full items-center justify-center">
-        <div className="text-center">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent mx-auto" />
-          <p className="mt-4 text-muted-foreground">Chargement...</p>
-        </div>
-      </div>
-    )
   }
 
   return (

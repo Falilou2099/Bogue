@@ -55,6 +55,16 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    // Vérifier l'authentification
+    const token = request.cookies.get("auth-token")?.value
+
+    if (!token) {
+      return NextResponse.json(
+        { success: false, error: "Non authentifié" },
+        { status: 401 }
+      )
+    }
+
     const { id } = await params
     const body = await request.json()
     const { title, content, categoryId } = body
@@ -97,6 +107,32 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    // Vérifier l'authentification
+    const token = request.cookies.get("auth-token")?.value
+
+    if (!token) {
+      return NextResponse.json(
+        { success: false, error: "Non authentifié" },
+        { status: 401 }
+      )
+    }
+
+    // Vérifier le rôle (seuls les admins peuvent supprimer)
+    const { jwtVerify } = await import("jose")
+    const JWT_SECRET = new TextEncoder().encode(
+      process.env.NEXTAUTH_SECRET || "votre-secret-jwt-super-securise-changez-moi"
+    )
+    
+    const { payload } = await jwtVerify(token, JWT_SECRET)
+    const userRole = (payload.role as string)?.toLowerCase()
+
+    if (userRole !== "admin") {
+      return NextResponse.json(
+        { success: false, error: "Permissions insuffisantes" },
+        { status: 403 }
+      )
+    }
+
     const { id } = await params
 
     await prisma.article.delete({

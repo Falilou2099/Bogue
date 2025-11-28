@@ -35,7 +35,6 @@ interface Category {
 export default function CategoriesPage() {
   const [categories, setCategories] = useState<Category[]>([])
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [editingCategory, setEditingCategory] = useState<Category | null>(null)
   const [formData, setFormData] = useState({ name: "", description: "" })
@@ -58,8 +57,6 @@ export default function CategoriesPage() {
       }
     } catch (error) {
       console.error("Erreur lors du chargement des catégories:", error)
-    } finally {
-      setIsLoading(false)
     }
   }
 
@@ -110,17 +107,6 @@ export default function CategoriesPage() {
     } catch (error) {
       console.error("Erreur lors de la suppression:", error)
     }
-  }
-
-  if (isLoading) {
-    return (
-      <div className="flex h-full items-center justify-center">
-        <div className="text-center">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent mx-auto" />
-          <p className="mt-4 text-muted-foreground">Chargement...</p>
-        </div>
-      </div>
-    )
   }
 
   const selectedCategoryData = categories.find(cat => cat.id === selectedCategory)
