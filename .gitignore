@@ -41,6 +41,9 @@ sonar-scanner-*/
 sonar-scanner-cli-*.zip
 .scannerwork/
 
+# Admin credentials (NEVER commit)
+.env.admin
+
 /lib/generated/prisma
 
 # tokens

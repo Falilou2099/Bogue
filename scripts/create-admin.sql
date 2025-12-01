@@ -1,32 +1,38 @@
 -- ==========================================
--- Script de création d'un compte Admin
+-- Template de création d'un compte Admin
 -- ==========================================
--- Ce script crée un compte administrateur par défaut
--- À exécuter après l'installation du projet
+-- Ce script est un TEMPLATE pour créer un compte administrateur
+-- 
+-- ⚠️ SÉCURITÉ: Ne commitez JAMAIS ce fichier avec un mot de passe réel
 --
--- IMPORTANT: Changez le mot de passe après la première connexion !
+-- Utilisation recommandée:
+-- 1. Utilisez le script Node.js: node scripts/create-admin.js
+--    (Génère automatiquement un hash bcrypt sécurisé)
 --
--- Utilisation:
--- 1. Connectez-vous à votre base de données Neon
--- 2. Exécutez ce script SQL
--- 3. Connectez-vous avec: admin@ticketflow.com / AdminPassword123!
--- 4. Changez immédiatement le mot de passe
+-- 2. OU générez un hash manuellement:
+--    node -e "const bcrypt = require('bcryptjs'); bcrypt.hash('VotreMotDePasse', 12).then(console.log)"
+--
+-- 3. Remplacez <BCRYPT_HASH_HERE> ci-dessous par le hash généré
+-- 4. Exécutez ce script SQL dans votre base de données
 -- ==========================================
 
 -- Insérer l'utilisateur admin
--- Mot de passe: AdminPassword123! (haché avec bcrypt, 12 rounds)
-INSERT INTO users (id, name, email, password, role, avatar, created_at, updated_at)
+-- REMPLACEZ <BCRYPT_HASH_HERE> par un hash bcrypt généré
+INSERT INTO users (id, name, email, password, role, avatar, created_at, updated_at, "hasCompletedTutorial")
 VALUES (
   'admin-default',
   'Administrateur',
   'admin@ticketflow.com',
-  '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewY5GyYIeWHvjC3C',
+  '<BCRYPT_HASH_HERE>',
   'ADMIN',
   '/avatars/admin.png',
   NOW(),
-  NOW()
+  NOW(),
+  true
 )
-ON CONFLICT (email) DO NOTHING;
+ON CONFLICT (email) DO UPDATE SET
+  password = EXCLUDED.password,
+  updated_at = NOW();
 
 -- Vérifier que l'admin a été créé
 SELECT id, name, email, role, created_at 
