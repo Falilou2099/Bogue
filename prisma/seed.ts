@@ -7,7 +7,7 @@ async function main() {
   console.log("🌱 Début du seed de la base de données...")
 
   // Hash du mot de passe pour les utilisateurs de test (12 caractères minimum)
-  const hashedPassword = await bcrypt.hash("Password123!@", 12)
+  const hashedPassword = await bcrypt.hash("Password123!", 12)
 
   // Créer les catégories
   console.log("📁 Création des catégories...")
