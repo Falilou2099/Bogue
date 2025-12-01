@@ -68,6 +68,7 @@ export async function createUser(
       createdAt: true,
       updatedAt: true,
       twoFactorEnabled: true,
+      hasCompletedTutorial: true,
     },
   })
 
@@ -114,6 +115,7 @@ export async function authenticateUser(
     createdAt: user.createdAt,
     updatedAt: user.updatedAt,
     twoFactorEnabled: user.twoFactorEnabled,
+    hasCompletedTutorial: user.hasCompletedTutorial,
   }
 }
 
@@ -136,6 +138,7 @@ export async function getUserById(
       createdAt: true,
       updatedAt: true,
       twoFactorEnabled: true,
+      hasCompletedTutorial: true,
     },
   })
 
