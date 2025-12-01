@@ -3,6 +3,8 @@ import { loginSchema } from "@/lib/validations/auth"
 import { authenticateUser } from "@/lib/auth"
 import { ZodError } from "zod"
 import { SignJWT } from "jose"
+import { loginRateLimiter } from "@/lib/rate-limit"
+import { prisma } from "@/lib/prisma"
 
 // Secret pour JWT (à déplacer dans .env en production)
 const JWT_SECRET = new TextEncoder().encode(
@@ -11,6 +13,26 @@ const JWT_SECRET = new TextEncoder().encode(
 
 export async function POST(request: NextRequest) {
   try {
+    // Rate limiting - 5 tentatives par 15 minutes
+    const rateLimitResult = await loginRateLimiter(request)
+    
+    if (!rateLimitResult.success) {
+      const resetDate = new Date(rateLimitResult.resetTime)
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Trop de tentatives de connexion. Réessayez plus tard.",
+          retryAfter: resetDate.toISOString(),
+        },
+        { 
+          status: 429,
+          headers: {
+            'Retry-After': Math.ceil((rateLimitResult.resetTime - Date.now()) / 1000).toString(),
+          }
+        }
+      )
+    }
+
     const body = await request.json()
 
     // Validation des données avec Zod
@@ -23,6 +45,17 @@ export async function POST(request: NextRequest) {
     )
 
     if (!user) {
+      // Log tentative de connexion échouée
+      await prisma.auditLog.create({
+        data: {
+          action: "LOGIN_FAILED",
+          entityType: "USER",
+          entityId: validatedData.email,
+          details: `Tentative de connexion échouée pour ${validatedData.email}`,
+          ipAddress: request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip") || "unknown",
+        },
+      }).catch((err: Error) => console.error("Erreur log audit:", err))
+
       return NextResponse.json(
         {
           success: false,
@@ -31,6 +64,18 @@ export async function POST(request: NextRequest) {
         { status: 401 }
       )
     }
+
+    // Log connexion réussie
+    await prisma.auditLog.create({
+      data: {
+        action: "LOGIN_SUCCESS",
+        entityType: "USER",
+        entityId: user.id,
+        userId: user.id,
+        details: `Connexion réussie pour ${user.email}`,
+        ipAddress: request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip") || "unknown",
+      },
+    }).catch((err: Error) => console.error("Erreur log audit:", err))
 
     // Créer un JWT token
     const token = await new SignJWT({ 
