@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
@@ -40,9 +40,15 @@ const adminNavigation = [
 export function Sidebar() {
   const [collapsed, setCollapsed] = useState(false)
   const pathname = usePathname()
-  const { user, hasRole } = useAuth()
+  const router = useRouter()
+  const { user, hasRole, logout } = useAuth()
 
   const isAdmin = hasRole(["admin", "manager"])
+
+  const handleLogout = () => {
+    logout()
+    router.push("/login")
+  }
 
   return (
     <aside
@@ -161,12 +167,12 @@ export function Sidebar() {
               <p className="text-sm font-medium text-sidebar-foreground truncate">{user?.name}</p>
               <p className="text-xs text-muted-foreground capitalize">{user?.role}</p>
             </div>
-            <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0">
+            <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={handleLogout}>
               <LogOut className="h-4 w-4" />
             </Button>
           </div>
         ) : (
-          <Button variant="ghost" size="icon" className="w-full h-9">
+          <Button variant="ghost" size="icon" className="w-full h-9" onClick={handleLogout}>
             <LogOut className="h-4 w-4" />
           </Button>
         )}
