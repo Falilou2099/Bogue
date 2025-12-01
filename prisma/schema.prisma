@@ -255,3 +255,23 @@ model Article {
   @@map("articles")
 }
 
+// ==========================================
+// Modèle AuditLog (Logs d'audit sécurité)
+// ==========================================
+model AuditLog {
+  id          String   @id @default(cuid())
+  action      String   // LOGIN_SUCCESS, LOGIN_FAILED, ROLE_CHANGE, USER_DELETE, etc.
+  entityType  String   // USER, TICKET, CATEGORY, etc.
+  entityId    String   // ID de l'entité concernée
+  userId      String?  // ID de l'utilisateur qui a effectué l'action (null pour tentatives échouées)
+  details     String?  @db.Text // Détails supplémentaires
+  ipAddress   String?  // Adresse IP de l'utilisateur
+  createdAt   DateTime @default(now())
+
+  @@map("audit_logs")
+  @@index([action])
+  @@index([entityType])
+  @@index([userId])
+  @@index([createdAt])
+}
+

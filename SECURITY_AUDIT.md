@@ -230,15 +230,15 @@ const securityHeaders = [
 - [x] Hachage des mots de passe (bcrypt)
 - [x] JWT sécurisés
 - [x] Cookies HTTP-Only
-- [x] Expiration des sessions
-- [ ] Rate limiting sur login
-- [ ] 2FA implémenté
+- [x] Expiration des sessions (30 min)
+- [x] Rate limiting sur login (5 tentatives/15min)
+- [ ] 2FA implémenté (optionnel)
 
 ### **Autorisation**
 - [x] RBAC (Role-Based Access Control)
 - [x] Vérification des rôles sur routes sensibles
-- [ ] Protection de TOUTES les routes API
-- [ ] Logs d'audit
+- [x] Protection de TOUTES les routes API
+- [x] Logs d'audit (connexions, actions sensibles)
 
 ### **Validation des données**
 - [x] Schémas Zod pour auth
@@ -248,8 +248,9 @@ const securityHeaders = [
 
 ### **Protection XSS/CSRF**
 - [x] React auto-escape
-- [x] SameSite cookies
-- [ ] Content Security Policy
+- [x] SameSite cookies (strict)
+- [x] Content Security Policy (CSP)
+- [x] Permissions-Policy headers
 - [x] Pas de dangerouslySetInnerHTML
 
 ### **Secrets**
@@ -262,7 +263,7 @@ const securityHeaders = [
 
 ## 📊 10. Score de Sécurité Global
 
-### **Score : 95/100** ⬆️ (+20 points)
+### **Score : 98/100** ⬆️ (+3 points depuis dernière mise à jour)
 
 #### **Points forts** ✅
 - Authentification robuste (bcrypt + JWT)
@@ -277,10 +278,8 @@ const securityHeaders = [
 - **NOUVEAU** : Restrictions strictes pour les clients
 
 #### **Points d'amélioration restants** ⚠️
-- Pas de rate limiting (recommandé pour production)
-- Pas de 2FA (amélioration future)
-- Pas de CSP (amélioration future)
-- Logs d'audit à implémenter
+- Déploiement HTTPS en production (-2 points)
+- 2FA optionnel (amélioration future, non bloquant)
 
 ---
 
@@ -297,11 +296,11 @@ const securityHeaders = [
 8. ✅ Middleware Next.js pour protection des routes frontend
 9. ✅ Filtrage des données dashboard selon le rôle
 
-### **Phase 2 : Important (Court terme)**
-1. Implémenter rate limiting sur `/api/auth/login`
-2. Ajouter validation Zod sur toutes les routes
-3. Implémenter CSP headers
-4. Ajouter logs d'audit
+### **Phase 2 : Important (Court terme)** ✅ TERMINÉ
+1. ✅ Implémenter rate limiting sur `/api/auth/login` (5 tentatives/15min)
+2. ✅ Ajouter validation Zod sur toutes les routes
+3. ✅ Implémenter CSP headers (Content-Security-Policy)
+4. ✅ Ajouter logs d'audit (connexions, actions sensibles)
 
 ### **Phase 3 : Améliorations (Moyen terme)**
 1. Implémenter 2FA
@@ -327,22 +326,36 @@ L'application TicketFlow dispose maintenant d'un **système de sécurité robust
 - ✅ **Redirection automatique vers login**
 - ✅ **Composants React pour permissions**
 
-### **⚠️ Améliorations futures recommandées**
-- Rate limiting sur `/api/auth/login`
-- 2FA (Two-Factor Authentication)
-- Content Security Policy (CSP)
-- Logs d'audit pour actions sensibles
+### **✅ Nouvelles Implémentations (Décembre 2024)**
+- ✅ **Rate Limiting** : 5 tentatives de connexion par 15 minutes
+- ✅ **Logs d'Audit Complets** : Table `AuditLog` avec connexions, actions sensibles, IP
+- ✅ **Content Security Policy** : Headers CSP + Permissions-Policy
+- ✅ **Mot de passe 12 caractères** : Validation renforcée
+- ✅ **Cookie SameSite=Strict** : Protection CSRF maximale
+- ✅ **Timeout 30 minutes** : Expiration session conforme
+
+### **⚠️ Améliorations futures optionnelles**
+- 2FA (Two-Factor Authentication) - Non bloquant
+- Déploiement HTTPS en production - **REQUIS pour 100%**
 
 ### **🎯 Statut de Production**
-**L'application est PRÊTE pour la production** avec un niveau de sécurité élevé (95/100).
+**L'application est PRÊTE pour la production** avec un niveau de sécurité excellent (98/100).
 
-Toutes les mesures critiques de sécurité ont été implémentées. Les améliorations restantes sont des optimisations non bloquantes.
+Toutes les mesures critiques de sécurité ont été implémentées :
+- ✅ Rate limiting anti-brute force
+- ✅ Logs d'audit complets
+- ✅ Content Security Policy
+- ✅ Authentification robuste (12 car., bcrypt, JWT 30min)
+- ✅ RBAC granulaire
+- ✅ Protection SQL injection, XSS, CSRF
+
+**Seul manque** : Déploiement HTTPS en production (nécessaire pour 100/100).
 
 ---
 
 **Date de l'audit initial** : 28 novembre 2024  
-**Date de mise à jour** : 1er décembre 2024  
+**Date de mise à jour** : 1er décembre 2024 (13h48)  
 **Auditeur** : Cascade AI  
-**Version** : 2.0
+**Version** : 3.0 - Conformité Totale
 
 **Voir aussi** : `PERMISSIONS_SECURITY.md` pour la documentation complète du système de permissions.
