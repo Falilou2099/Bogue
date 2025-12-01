@@ -234,7 +234,52 @@ npm run db:seed
 
 ---
 
-### **Étape 6 : Lancer l'Application**
+### **Étape 6 : Créer un Compte Administrateur**
+
+**Option 1 : Utiliser le script automatique (Recommandé)**
+
+```bash
+node scripts/create-admin.js
+```
+
+**Résultat** :
+```
+🔐 Création du compte administrateur...
+🔒 Hachage du mot de passe...
+✅ Compte administrateur créé avec succès!
+
+📋 Informations de connexion:
+   ┌─────────────────────────────────────────────
+   │ Email:        admin@ticketflow.com
+   │ Mot de passe: AdminPassword123!
+   │ Rôle:         ADMIN
+   └─────────────────────────────────────────────
+
+⚠️  IMPORTANT: Changez le mot de passe après la première connexion!
+```
+
+**Option 2 : Personnaliser l'admin**
+
+```bash
+ADMIN_EMAIL=admin@monentreprise.com ADMIN_PASSWORD=MonMotDePasse123! ADMIN_NAME="Admin Principal" node scripts/create-admin.js
+```
+
+**Option 3 : Utiliser le script SQL**
+
+Si vous préférez exécuter du SQL directement dans Neon :
+
+1. Connectez-vous à [console.neon.tech](https://console.neon.tech)
+2. Ouvrez le **SQL Editor**
+3. Copiez le contenu de `scripts/create-admin.sql`
+4. Exécutez le script
+
+**Compte créé** :
+- Email : `admin@ticketflow.com`
+- Mot de passe : `AdminPassword123!`
+
+---
+
+### **Étape 7 : Lancer l'Application**
 
 ```bash
 npm run dev
@@ -253,9 +298,23 @@ npm run dev
 
 ---
 
-## 👤 Comptes de Test
+## 👤 Comptes de Connexion
 
-Après le seed, utilisez ces comptes pour vous connecter :
+### **Compte Administrateur (Production)**
+
+Créé avec le script `create-admin.js` :
+
+| Email | Mot de passe | Rôle |
+|-------|--------------|------|
+| `admin@ticketflow.com` | `AdminPassword123!` | **Admin** |
+
+⚠️ **IMPORTANT** : Changez ce mot de passe après la première connexion !
+
+---
+
+### **Comptes de Test (Développement)**
+
+Après le seed (`npm run db:seed`), utilisez ces comptes :
 
 | Email | Mot de passe | Rôle | Permissions |
 |-------|--------------|------|-------------|

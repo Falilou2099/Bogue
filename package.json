@@ -12,6 +12,7 @@
     "test:coverage": "jest --coverage",
     "test:ci": "jest --ci --coverage --maxWorkers=2",
     "db:seed": "tsx prisma/seed.ts",
+    "db:create-admin": "node scripts/create-admin.js",
     "postinstall": "prisma generate"
   },
   "dependencies": {
