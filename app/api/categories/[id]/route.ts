@@ -1,11 +1,21 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
+import { requireAuth } from "@/lib/auth-middleware"
 
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    // Vérifier l'authentification et les permissions (ADMIN et MANAGER uniquement)
+    const authResult = await requireAuth(request, {
+      requiredPermissions: ["categories:update"],
+    })
+    
+    if (authResult instanceof NextResponse) {
+      return authResult
+    }
+    
     const { id } = await params
     const body = await request.json()
     const { name, description } = body
@@ -43,6 +53,15 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    // Vérifier l'authentification et les permissions (ADMIN et MANAGER uniquement)
+    const authResult = await requireAuth(request, {
+      requiredPermissions: ["categories:delete"],
+    })
+    
+    if (authResult instanceof NextResponse) {
+      return authResult
+    }
+    
     const { id } = await params
 
     // Vérifier s'il y a des tickets associés

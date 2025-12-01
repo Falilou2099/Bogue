@@ -9,14 +9,18 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Plus, Search, Filter, X, Grid3x3, List } from "lucide-react"
 import Link from "next/link"
+import { useAuth } from "@/lib/auth-context"
 import { STATUS_LABELS, STATUS_COLORS, PRIORITY_LABELS, PRIORITY_COLORS } from "@/lib/constants"
 import type { Ticket } from "@/lib/types"
 
 export default function TicketsPage() {
+  const { user, hasRole } = useAuth()
   const [tickets, setTickets] = useState<Ticket[]>([])
   const [searchQuery, setSearchQuery] = useState("")
   const [activeTab, setActiveTab] = useState("tous")
-  const [viewMode, setViewMode] = useState<"all" | "my">("all")
+  // Par défaut, les agents/managers voient leurs responsabilités
+  const defaultViewMode = hasRole(["agent", "manager", "admin"]) ? "assigned" : "my"
+  const [viewMode, setViewMode] = useState<"all" | "my" | "assigned">(defaultViewMode)
   const [showFilters, setShowFilters] = useState(false)
   const [displayMode, setDisplayMode] = useState<"grid" | "list">("grid")
   const [filters, setFilters] = useState({
@@ -37,6 +41,16 @@ export default function TicketsPage() {
   }, [])
 
   const filteredTickets = tickets.filter((ticket) => {
+    // Filtre par mode de vue
+    if (viewMode === "my" && ticket.createdBy?.id !== user?.id) {
+      return false
+    }
+    
+    // Filtre "Mes responsabilités" - tickets assignés à l'utilisateur
+    if (viewMode === "assigned" && ticket.assignedTo?.id !== user?.id) {
+      return false
+    }
+    
     // Recherche
     if (
       searchQuery &&
@@ -75,7 +89,7 @@ export default function TicketsPage() {
   })
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 w-full max-w-full overflow-x-hidden">
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
@@ -205,6 +219,15 @@ export default function TicketsPage() {
               >
                 Mes tickets
               </Button>
+              {hasRole(["agent", "manager", "admin"]) && (
+                <Button
+                  variant={viewMode === "assigned" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setViewMode("assigned")}
+                >
+                  Mes responsabilités
+                </Button>
+              )}
             </div>
           </div>
           <Link href="/tickets/new">

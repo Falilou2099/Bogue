@@ -10,6 +10,23 @@ export async function GET(
   try {
     const { id } = await params
     
+    // Vérifier l'authentification pour filtrer les messages
+    const token = request.cookies.get("auth-token")?.value
+    let userRole = null
+    
+    if (token) {
+      try {
+        const { jwtVerify } = await import("jose")
+        const JWT_SECRET = new TextEncoder().encode(
+          process.env.NEXTAUTH_SECRET || "votre-secret-jwt-super-securise-changez-moi"
+        )
+        const { payload } = await jwtVerify(token, JWT_SECRET)
+        userRole = (payload.role as string)?.toUpperCase()
+      } catch (error) {
+        // Token invalide, continuer sans rôle
+      }
+    }
+    
     const ticket = await prisma.ticket.findUnique({
       where: { id },
       include: {
@@ -35,7 +52,15 @@ export async function GET(
         sla: true,
         messages: {
           include: {
-            sender: true,
+            sender: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                avatar: true,
+                role: true,
+              },
+            },
             attachments: true,
           },
           orderBy: { createdAt: 'asc' },
@@ -64,6 +89,11 @@ export async function GET(
         { success: false, error: "Ticket non trouvé" },
         { status: 404 }
       )
+    }
+
+    // Filtrer les messages internes pour les clients (DEMANDEUR)
+    if (userRole === "DEMANDEUR") {
+      ticket.messages = ticket.messages.filter(msg => msg.type === "PUBLIC")
     }
 
     return NextResponse.json({ success: true, ticket }, { status: 200 })
@@ -171,6 +201,70 @@ export async function PATCH(
 
     if (changes.length > 0) {
       await prisma.ticketHistory.createMany({ data: changes })
+    }
+
+    // Créer des notifications pour les mises à jour
+    const notificationsToCreate: Array<{
+      userId: string
+      type: "CHANGEMENT_STATUT" | "TICKET_FERME"
+      title: string
+      message: string
+      ticketId: string
+    }> = []
+    
+    // 1. Notifier le créateur du ticket (client)
+    if (existingTicket.createdById) {
+      notificationsToCreate.push({
+        userId: existingTicket.createdById,
+        type: "CHANGEMENT_STATUT" as const,
+        title: "Ticket mis à jour",
+        message: `Votre ticket #${id} a été mis à jour`,
+        ticketId: id,
+      })
+    }
+    
+    // 2. Notifier le responsable du ticket (agent/manager)
+    if (updatedTicket.assignedToId && updatedTicket.assignedToId !== existingTicket.createdById) {
+      notificationsToCreate.push({
+        userId: updatedTicket.assignedToId,
+        type: "CHANGEMENT_STATUT" as const,
+        title: "Ticket mis à jour",
+        message: `Le ticket #${id} dont vous êtes responsable a été mis à jour`,
+        ticketId: id,
+      })
+    }
+    
+    // 3. Si le ticket est clôturé, notifier tous les admins, managers et agents
+    if (validatedData.status === "FERME" && existingTicket.status !== "FERME") {
+      const usersToNotify = await prisma.user.findMany({
+        where: {
+          OR: [
+            { role: "ADMIN" },
+            { role: "MANAGER" },
+            { role: "AGENT" },
+          ],
+        },
+        select: { id: true },
+      })
+      
+      usersToNotify.forEach((user) => {
+        // Éviter les doublons
+        if (!notificationsToCreate.some(n => n.userId === user.id)) {
+          notificationsToCreate.push({
+            userId: user.id,
+            type: "TICKET_FERME" as const,
+            title: "Ticket clôturé",
+            message: `Le ticket #${id} a été clôturé`,
+            ticketId: id,
+          })
+        }
+      })
+    }
+    
+    if (notificationsToCreate.length > 0) {
+      await prisma.notification.createMany({
+        data: notificationsToCreate,
+      })
     }
 
     return NextResponse.json(

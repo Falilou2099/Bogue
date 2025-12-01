@@ -48,14 +48,30 @@ export function Header({ onMenuClick }: { onMenuClick?: () => void }) {
 
   const unreadCount = notifications.filter((n) => !n.read).length
 
+  const handleNotificationClick = (notif: Notification) => {
+    // Marquer comme lue
+    fetch(`/api/notifications/${notif.id}/read`, { method: 'POST' })
+      .then(() => {
+        setNotifications(prev => 
+          prev.map(n => n.id === notif.id ? { ...n, read: true } : n)
+        )
+      })
+      .catch(() => {})
+
+    // Rediriger vers le ticket si disponible
+    if (notif.ticketId) {
+      router.push(`/tickets/${notif.ticketId}`)
+    }
+  }
+
   const handleLogout = () => {
     logout()
     router.push("/login")
   }
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="flex h-16 items-center gap-4 px-4 sm:px-6">
+    <header className="sticky top-0 z-50 w-full border-b bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 shadow-lg">
+      <div className="flex h-14 items-center gap-4 px-4 sm:px-6">
         {/* Mobile menu button */}
         <Button
           variant="ghost"
@@ -69,11 +85,11 @@ export function Header({ onMenuClick }: { onMenuClick?: () => void }) {
         {/* Search */}
         <div className="flex-1 max-w-md">
           <div className="relative">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-slate-400" />
             <Input
               type="search"
               placeholder="Rechercher..."
-              className="pl-8 w-full"
+              className="pl-8 w-full bg-slate-800/50 border-slate-700 text-slate-100 placeholder:text-slate-400 focus:bg-slate-800 focus:border-blue-500"
             />
           </div>
         </div>
@@ -83,7 +99,7 @@ export function Header({ onMenuClick }: { onMenuClick?: () => void }) {
           {/* Notifications */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="relative">
+              <Button variant="ghost" size="icon" className="relative hover:bg-slate-700/50 text-slate-200">
                 <Bell className="h-5 w-5" />
                 {unreadCount > 0 && (
                   <Badge
@@ -108,14 +124,18 @@ export function Header({ onMenuClick }: { onMenuClick?: () => void }) {
                 </div>
               ) : (
                 notifications.slice(0, 5).map((notif) => (
-                  <DropdownMenuItem key={notif.id} className="flex flex-col items-start gap-1 p-3">
+                  <DropdownMenuItem 
+                    key={notif.id} 
+                    className="flex flex-col items-start gap-1 p-3 cursor-pointer group"
+                    onClick={() => handleNotificationClick(notif)}
+                  >
                     <div className="flex items-center gap-2 w-full">
                       <div className="font-medium text-sm">{notif.title}</div>
                       {!notif.read && (
                         <div className="h-2 w-2 rounded-full bg-blue-500" />
                       )}
                     </div>
-                    <div className="text-xs text-muted-foreground">
+                    <div className="text-xs text-muted-foreground group-hover:text-foreground transition-colors">
                       {notif.message}
                     </div>
                   </DropdownMenuItem>
