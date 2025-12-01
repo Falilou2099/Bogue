@@ -7,7 +7,7 @@ async function main() {
   console.log("🌱 Début du seed de la base de données...")
 
   // Hash du mot de passe pour les utilisateurs de test (12 caractères minimum)
-  const hashedPassword = await bcrypt.hash("Password123!", 12)
+  const hashedPassword = await bcrypt.hash("Password123!@", 12)
 
   // Créer les catégories
   console.log("📁 Création des catégories...")
@@ -562,7 +562,7 @@ Nous acceptons les cartes Visa, Mastercard, et les virements bancaires.`,
   console.log("   - agent2@ticketflow.com (Agent)")
   console.log("   - client@example.com (Demandeur)")
   console.log("   - client2@example.com (Demandeur)")
-  console.log("\n🔑 Mot de passe pour tous: Password123!")
+  console.log("\n🔑 Mot de passe pour tous: Password123!@")
 }
 
 main()

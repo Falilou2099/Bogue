@@ -83,7 +83,7 @@ ticket_history     → Historique des modifications
 attachments        → Pièces jointes
 notifications      → Notifications utilisateurs
 articles           → Base de connaissances
-audit_logs         → Logs d'audit sécurité (nouveau)
+audit_logs         → Logs d'audit sécurité 
 ```
 
 ---
@@ -318,10 +318,12 @@ Après le seed (`npm run db:seed`), utilisez ces comptes :
 
 | Email | Mot de passe | Rôle | Permissions |
 |-------|--------------|------|-------------|
-| `admin@ticketflow.com` | `Password123!` | **Admin** | Accès total, gestion utilisateurs |
-| `manager@ticketflow.com` | `Password123!` | **Manager** | Gestion tickets, analytics, SLA |
-| `agent@ticketflow.com` | `Password123!` | **Agent** | Traitement tickets assignés |
-| `client@example.com` | `Password123!` | **Demandeur** | Création et suivi de ses tickets |
+| `admin@ticketflow.com` | `Password123!@` | **Admin** | Accès total, gestion utilisateurs |
+| `manager@ticketflow.com` | `Password123!@` | **Manager** | Gestion tickets, analytics, SLA |
+| `agent@ticketflow.com` | `Password123!@` | **Agent** | Traitement tickets assignés |
+| `agent2@ticketflow.com` | `Password123!@` | **Agent** | Traitement tickets assignés |
+| `client@example.com` | `Password123!@` | **Demandeur** | Création et suivi de ses tickets |
+| `client2@example.com` | `Password123!@` | **Demandeur** | Création et suivi de ses tickets |
 
 ---
 
