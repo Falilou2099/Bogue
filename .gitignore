@@ -41,3 +41,6 @@ next-env.d.ts
 # tokens
 token.git
 .token.git
+
+# documentation
+/docs
