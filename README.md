@@ -403,10 +403,12 @@ Après le seed de la base :
 
 | Email | Mot de passe | Rôle |
 |-------|--------------|------|
-| admin@ticketflow.com | Password123! | Admin |
-| manager@ticketflow.com | Password123! | Manager |
-| agent@ticketflow.com | Password123! | Agent |
-| client@example.com | Password123! | Demandeur |
+| admin@ticketflow.com | Password123!@ | Admin |
+| manager@ticketflow.com | Password123!@ | Manager |
+| agent@ticketflow.com | Password123!@ | Agent |
+| agent2@ticketflow.com | Password123!@ | Agent |
+| client@example.com | Password123!@ | Demandeur |
+| client2@example.com | Password123!@ | Demandeur |
 
 ## 🔒 Sécurité
 
