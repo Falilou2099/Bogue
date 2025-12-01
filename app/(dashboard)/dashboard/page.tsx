@@ -11,6 +11,7 @@ import Link from "next/link"
 import { useAuth } from "@/lib/auth-context"
 import { usePermissions } from "@/hooks/use-permissions"
 import { UnassignedTicketsBanner } from "@/components/tickets/unassigned-tickets-banner"
+import { InteractiveTutorial } from "@/components/tutorial/interactive-tutorial"
 import { STATUS_LABELS, STATUS_COLORS, PRIORITY_LABELS, PRIORITY_COLORS } from "@/lib/constants"
 import type { Ticket as TicketType, DashboardStats } from "@/lib/types"
 import {
@@ -37,6 +38,14 @@ export default function DashboardPage() {
   const [tickets, setTickets] = useState<TicketType[]>([])
   const [dashboardStats, setDashboardStats] = useState<DashboardStats | null>(null)
   const [chartData, setChartData] = useState<any>(null)
+  const [showTutorial, setShowTutorial] = useState(false)
+
+  // Vérifier si l'utilisateur doit voir le tutoriel
+  useEffect(() => {
+    if (user && !user.hasCompletedTutorial) {
+      setShowTutorial(true)
+    }
+  }, [user])
 
   useEffect(() => {
     const fetchData = async () => {
@@ -116,8 +125,33 @@ export default function DashboardPage() {
       ]
     : baseStats
 
+  const handleCompleteTutorial = async () => {
+    try {
+      await fetch("/api/user/complete-tutorial", { method: "POST" })
+      setShowTutorial(false)
+    } catch (error) {
+      console.error("Erreur lors de la complétion du tutoriel:", error)
+    }
+  }
+
+  const handleSkipTutorial = async () => {
+    try {
+      await fetch("/api/user/complete-tutorial", { method: "POST" })
+      setShowTutorial(false)
+    } catch (error) {
+      console.error("Erreur lors du skip du tutoriel:", error)
+    }
+  }
+
   return (
     <div className="space-y-6 w-full max-w-full overflow-x-hidden">
+      {/* Tutoriel interactif */}
+      {showTutorial && (
+        <InteractiveTutorial
+          onComplete={handleCompleteTutorial}
+          onSkip={handleSkipTutorial}
+        />
+      )}
       {/* Bannière des tickets non assignés (visible uniquement pour agents et managers) */}
       <UnassignedTicketsBanner />
       
@@ -127,7 +161,7 @@ export default function DashboardPage() {
           <h1 className="text-2xl font-bold tracking-tight">Bonjour, {user?.name.split(" ")[0]}</h1>
           <p className="text-muted-foreground">Voici un aperçu de votre activité aujourd'hui</p>
         </div>
-        <Button size="sm" asChild>
+        <Button size="sm" asChild data-tutorial="create-ticket">
           <Link href="/tickets/new">
             <Plus className="mr-2 h-4 w-4" />
             Nouveau ticket
