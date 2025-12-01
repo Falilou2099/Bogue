@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
     })
       .setProtectedHeader({ alg: "HS256" })
       .setIssuedAt()
-      .setExpirationTime("7d") // Token valide 7 jours
+      .setExpirationTime("30m") // Token valide 30 minutes
       .sign(JWT_SECRET)
 
     // Créer la réponse avec le cookie
@@ -57,8 +57,8 @@ export async function POST(request: NextRequest) {
     response.cookies.set("auth-token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: 60 * 60 * 24 * 7, // 7 jours
+      sameSite: "strict",
+      maxAge: 60 * 30, // 30 minutes
       path: "/",
     })
 
