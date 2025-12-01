@@ -236,46 +236,62 @@ npm run db:seed
 
 ### **Étape 6 : Créer un Compte Administrateur**
 
-**Option 1 : Utiliser le script automatique (Recommandé)**
+**Option 1 : Mode interactif (Recommandé - Plus sécurisé)**
 
 ```bash
 node scripts/create-admin.js
 ```
 
-**Résultat** :
+Le script vous demandera de saisir un mot de passe de manière sécurisée :
+
 ```
 🔐 Création du compte administrateur...
+⚠️  Aucun mot de passe fourni via ADMIN_PASSWORD
+📝 Mode interactif activé
+
+🔐 Entrez le mot de passe admin (min 12 caractères): ********
 🔒 Hachage du mot de passe...
 ✅ Compte administrateur créé avec succès!
 
 📋 Informations de connexion:
    ┌─────────────────────────────────────────────
    │ Email:        admin@ticketflow.com
-   │ Mot de passe: AdminPassword123!
+   │ Mot de passe: ********** (masqué pour sécurité)
    │ Rôle:         ADMIN
    └─────────────────────────────────────────────
 
-⚠️  IMPORTANT: Changez le mot de passe après la première connexion!
+⚠️  IMPORTANT: Conservez le mot de passe en lieu sûr!
 ```
 
-**Option 2 : Personnaliser l'admin**
+**Option 2 : Variables d'environnement (Production)**
+
+Pour la production, utilisez des variables d'environnement :
 
 ```bash
-ADMIN_EMAIL=admin@monentreprise.com ADMIN_PASSWORD=MonMotDePasse123! ADMIN_NAME="Admin Principal" node scripts/create-admin.js
+# Méthode 1 : Inline
+ADMIN_EMAIL=admin@monentreprise.com ADMIN_PASSWORD=VotreMotDePasseSecurise123! node scripts/create-admin.js
+
+# Méthode 2 : Fichier .env.admin (plus sécurisé)
+cp .env.admin.example .env.admin
+# Éditez .env.admin avec vos valeurs
+source .env.admin && node scripts/create-admin.js
+rm .env.admin  # Supprimez après utilisation
 ```
 
-**Option 3 : Utiliser le script SQL**
+**Option 3 : Script SQL (Manuel)**
 
-Si vous préférez exécuter du SQL directement dans Neon :
+Si vous préférez SQL :
 
-1. Connectez-vous à [console.neon.tech](https://console.neon.tech)
-2. Ouvrez le **SQL Editor**
-3. Copiez le contenu de `scripts/create-admin.sql`
-4. Exécutez le script
+1. Générez un hash bcrypt :
+   ```bash
+   node -e "const bcrypt = require('bcryptjs'); bcrypt.hash('VotreMotDePasse', 12).then(console.log)"
+   ```
 
-**Compte créé** :
-- Email : `admin@ticketflow.com`
-- Mot de passe : `AdminPassword123!`
+2. Copiez `scripts/create-admin.sql`
+3. Remplacez `<BCRYPT_HASH_HERE>` par le hash généré
+4. Exécutez dans Neon SQL Editor
+
+⚠️ **SÉCURITÉ** : Ne commitez JAMAIS de mots de passe en clair dans Git
 
 ---
 
