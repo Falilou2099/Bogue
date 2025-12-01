@@ -128,29 +128,6 @@ export default function LoginPage() {
           </CardContent>
         </Card>
 
-        {/* Demo Logins */}
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium">Connexions démo</CardTitle>
-            <CardDescription className="text-xs">Cliquez pour vous connecter rapidement</CardDescription>
-          </CardHeader>
-          <CardContent className="grid grid-cols-2 gap-2">
-            {demoLogins.map((demo) => (
-              <Button
-                key={demo.role}
-                variant="outline"
-                size="sm"
-                className="text-xs bg-transparent"
-                onClick={() => {
-                  setEmail(demo.email)
-                  setPassword("demo")
-                }}
-              >
-                {demo.role}
-              </Button>
-            ))}
-          </CardContent>
-        </Card>
       </div>
     </div>
   )
