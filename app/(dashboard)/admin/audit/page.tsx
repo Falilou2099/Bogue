@@ -5,7 +5,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { Activity, User, Calendar, FileText } from "lucide-react"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button"
+import { Activity, User, Calendar, FileText, Filter, X } from "lucide-react"
 import { formatDistanceToNow } from "date-fns"
 import { fr } from "date-fns/locale"
 
@@ -28,14 +31,44 @@ interface AuditLog {
 
 export default function AuditPage() {
   const [logs, setLogs] = useState<AuditLog[]>([])
+  const [allUsers, setAllUsers] = useState<Array<{ id: string; name: string; email: string }>>([])
+  const [filters, setFilters] = useState({
+    userId: "",
+    action: "",
+    ticketId: "",
+  })
 
   useEffect(() => {
+    fetchUsers()
     fetchAuditLogs()
   }, [])
 
+  useEffect(() => {
+    fetchAuditLogs()
+  }, [filters])
+
+  const fetchUsers = async () => {
+    try {
+      const response = await fetch("/api/users")
+      if (response.ok) {
+        const data = await response.json()
+        if (data.success) {
+          setAllUsers(data.users)
+        }
+      }
+    } catch (error) {
+      console.error("Erreur lors de la récupération des utilisateurs:", error)
+    }
+  }
+
   const fetchAuditLogs = async () => {
     try {
-      const response = await fetch("/api/audit")
+      const params = new URLSearchParams()
+      if (filters.userId) params.append("userId", filters.userId)
+      if (filters.action) params.append("action", filters.action)
+      if (filters.ticketId) params.append("ticketId", filters.ticketId)
+
+      const response = await fetch(`/api/audit?${params.toString()}`)
       if (response.ok) {
         const data = await response.json()
         if (data.success) {
@@ -46,6 +79,16 @@ export default function AuditPage() {
       console.error("Erreur lors de la récupération des logs:", error)
     }
   }
+
+  const clearFilters = () => {
+    setFilters({
+      userId: "",
+      action: "",
+      ticketId: "",
+    })
+  }
+
+  const hasActiveFilters = filters.userId || filters.action || filters.ticketId
 
   const getActionLabel = (action: string) => {
     const labels: Record<string, string> = {
@@ -142,10 +185,81 @@ export default function AuditPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Historique détaillé</CardTitle>
-          <CardDescription>
-            Liste chronologique de toutes les actions
-          </CardDescription>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle>Historique détaillé</CardTitle>
+              <CardDescription>
+                Liste chronologique de toutes les actions
+              </CardDescription>
+            </div>
+            <Filter className="h-5 w-5 text-muted-foreground" />
+          </div>
+          
+          {/* Filtres */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Utilisateur</label>
+              <Select
+                value={filters.userId}
+                onValueChange={(value) => setFilters({ ...filters, userId: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Tous les utilisateurs" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">Tous les utilisateurs</SelectItem>
+                  {allUsers.map((user) => (
+                    <SelectItem key={user.id} value={user.id}>
+                      {user.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Action</label>
+              <Select
+                value={filters.action}
+                onValueChange={(value) => setFilters({ ...filters, action: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Toutes les actions" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">Toutes les actions</SelectItem>
+                  <SelectItem value="CREATION">Création</SelectItem>
+                  <SelectItem value="CHANGEMENT_STATUT">Changement de statut</SelectItem>
+                  <SelectItem value="ASSIGNATION">Assignation</SelectItem>
+                  <SelectItem value="CHANGEMENT_PRIORITE">Changement de priorité</SelectItem>
+                  <SelectItem value="COMMENTAIRE">Commentaire</SelectItem>
+                  <SelectItem value="FERMETURE">Fermeture</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Ticket ID</label>
+              <Input
+                placeholder="Ex: TKT-001"
+                value={filters.ticketId}
+                onChange={(e) => setFilters({ ...filters, ticketId: e.target.value })}
+              />
+            </div>
+
+            <div className="flex items-end">
+              {hasActiveFilters && (
+                <Button
+                  variant="outline"
+                  onClick={clearFilters}
+                  className="w-full"
+                >
+                  <X className="mr-2 h-4 w-4" />
+                  Réinitialiser
+                </Button>
+              )}
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
           <ScrollArea className="h-[600px] pr-4">

@@ -68,6 +68,7 @@ describe('/api/audit', () => {
       }),
     })
     expect(prisma.ticketHistory.findMany).toHaveBeenCalledWith({
+      where: {},
       include: {
         user: {
           select: {
@@ -84,6 +85,91 @@ describe('/api/audit', () => {
       },
       take: 100,
     })
+  })
+
+  it('devrait filtrer par userId', async () => {
+    const mockLogs = [
+      {
+        id: 'log-1',
+        ticketId: 'TKT-001',
+        userId: 'user-1',
+        action: 'CREATION',
+        oldValue: null,
+        newValue: 'Ticket créé',
+        createdAt: new Date('2024-01-01'),
+        user: {
+          id: 'user-1',
+          name: 'John Doe',
+          email: 'john@example.com',
+          avatar: null,
+          role: 'AGENT',
+        },
+      },
+    ]
+
+    ;(prisma.ticketHistory.findMany as jest.Mock).mockResolvedValue(mockLogs)
+
+    const request = new NextRequest('http://localhost:3000/api/audit?userId=user-1')
+    const response = await GET(request)
+    const data = await response.json()
+
+    expect(response.status).toBe(200)
+    expect(data.success).toBe(true)
+    expect(data.logs).toHaveLength(1)
+    expect(prisma.ticketHistory.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { userId: 'user-1' },
+      })
+    )
+  })
+
+  it('devrait filtrer par action', async () => {
+    const mockLogs = []
+    ;(prisma.ticketHistory.findMany as jest.Mock).mockResolvedValue(mockLogs)
+
+    const request = new NextRequest('http://localhost:3000/api/audit?action=CREATION')
+    const response = await GET(request)
+
+    expect(response.status).toBe(200)
+    expect(prisma.ticketHistory.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { action: 'CREATION' },
+      })
+    )
+  })
+
+  it('devrait filtrer par ticketId', async () => {
+    const mockLogs = []
+    ;(prisma.ticketHistory.findMany as jest.Mock).mockResolvedValue(mockLogs)
+
+    const request = new NextRequest('http://localhost:3000/api/audit?ticketId=TKT-001')
+    const response = await GET(request)
+
+    expect(response.status).toBe(200)
+    expect(prisma.ticketHistory.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { ticketId: 'TKT-001' },
+      })
+    )
+  })
+
+  it('devrait combiner plusieurs filtres', async () => {
+    const mockLogs = []
+    ;(prisma.ticketHistory.findMany as jest.Mock).mockResolvedValue(mockLogs)
+
+    const request = new NextRequest('http://localhost:3000/api/audit?userId=user-1&action=CREATION&ticketId=TKT-001')
+    const response = await GET(request)
+
+    expect(response.status).toBe(200)
+    expect(prisma.ticketHistory.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { 
+          userId: 'user-1',
+          action: 'CREATION',
+          ticketId: 'TKT-001'
+        },
+      })
+    )
   })
 
   it('devrait gérer les erreurs de base de données', async () => {

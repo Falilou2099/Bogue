@@ -11,7 +11,7 @@ const PUBLIC_ROUTES = ["/login", "/register", "/forgot-password"]
 
 // Routes par rôle
 const ROLE_ROUTES = {
-  demandeur: ["/dashboard", "/tickets", "/knowledge-base"],
+  demandeur: ["/dashboard", "/tickets", "/knowledge-base", "/settings"],
   agent: [
     "/dashboard",
     "/tickets",
@@ -20,6 +20,7 @@ const ROLE_ROUTES = {
     "/dashboard/categories",
     "/dashboard/sla",
     "/dashboard/users",
+    "/settings",
   ],
   manager: [
     "/dashboard",
@@ -30,6 +31,7 @@ const ROLE_ROUTES = {
     "/dashboard/sla",
     "/dashboard/users",
     "/admin",
+    "/settings",
   ],
   admin: [
     "/dashboard",
@@ -40,6 +42,7 @@ const ROLE_ROUTES = {
     "/dashboard/sla",
     "/dashboard/users",
     "/admin",
+    "/settings",
   ],
 }
 
