@@ -298,6 +298,197 @@ npm run dev
 
 ---
 
+## ⚠️ Résolution des Problèmes d'Installation
+
+### **Erreur : "Cannot find module '.prisma/client'"**
+
+**Cause** : Le client Prisma n'a pas été généré.
+
+**Solution** :
+```bash
+npx prisma generate
+```
+
+---
+
+### **Erreur : "Port 3000 is in use"**
+
+**Cause** : Un autre processus utilise le port 3000.
+
+**Solution 1** : Tuer le processus
+```bash
+# Linux/Mac
+lsof -ti:3000 | xargs kill -9
+
+# Windows
+netstat -ano | findstr :3000
+taskkill /PID <PID> /F
+```
+
+**Solution 2** : Utiliser un autre port
+```bash
+PORT=3001 npm run dev
+```
+
+---
+
+### **Erreur : "JWSSignatureVerificationFailed"**
+
+**Cause** : Token JWT signé avec un ancien `NEXTAUTH_SECRET`.
+
+**Solution** :
+1. Supprimez les cookies du navigateur (F12 → Application → Cookies)
+2. Reconnectez-vous
+3. Le nouveau token sera signé avec le bon secret
+
+---
+
+### **Erreur : "The table 'public.audit_logs' does not exist"**
+
+**Cause** : Le schéma Prisma n'a pas été appliqué à la base de données.
+
+**Solution** :
+```bash
+npx prisma db push
+```
+
+---
+
+### **Erreur : "Invalid `prisma.user.create()` invocation"**
+
+**Cause** : Conflit de données ou contrainte unique violée.
+
+**Solution** : Réinitialiser la base de données
+```bash
+npx prisma db push --force-reset
+npm run db:seed
+```
+
+---
+
+### **Erreur : "Environment variable not found: DATABASE_URL"**
+
+**Cause** : Le fichier `.env` n'existe pas ou est mal configuré.
+
+**Solution** :
+```bash
+# Copier le fichier exemple
+cp .env.example .env
+
+# Éditer et ajouter votre DATABASE_URL
+nano .env
+```
+
+---
+
+### **Erreur : "Module not found: Can't resolve 'bcryptjs'"**
+
+**Cause** : Dépendances non installées.
+
+**Solution** :
+```bash
+# Supprimer node_modules et réinstaller
+rm -rf node_modules package-lock.json
+npm install
+```
+
+---
+
+### **Erreur : "Rate limit exceeded" lors de la connexion**
+
+**Cause** : Trop de tentatives de connexion échouées (5 max en 15 minutes).
+
+**Solution** :
+- Attendez 15 minutes
+- Ou redémarrez le serveur de développement (`Ctrl+C` puis `npm run dev`)
+
+---
+
+### **Erreur : "Prisma Client could not locate the Query Engine"**
+
+**Cause** : Client Prisma incompatible avec votre OS.
+
+**Solution** :
+```bash
+npx prisma generate
+npm run dev
+```
+
+---
+
+### **Erreur de Build : "Type error in lib/auth.ts"**
+
+**Cause** : Types TypeScript manquants après ajout de `hasCompletedTutorial`.
+
+**Solution** :
+```bash
+npx prisma generate
+npm run dev
+```
+
+---
+
+### **L'application ne se connecte pas à Neon**
+
+**Vérifications** :
+1. ✅ `DATABASE_URL` contient `?sslmode=require`
+2. ✅ Pas d'espaces dans l'URL
+3. ✅ Le mot de passe est correctement encodé (caractères spéciaux)
+4. ✅ La base Neon est active (pas en pause)
+
+**Test de connexion** :
+```bash
+npx prisma db pull
+```
+
+Si ça fonctionne, la connexion est OK.
+
+---
+
+### **Le tutoriel ne s'affiche pas**
+
+**Cause** : L'utilisateur a déjà `hasCompletedTutorial = true`.
+
+**Solution** : Réinitialiser le tutoriel
+```bash
+# Via l'API
+curl -X DELETE http://localhost:3000/api/user/complete-tutorial \
+  -H "Cookie: auth-token=VOTRE_TOKEN"
+```
+
+Ou directement en base de données :
+```sql
+UPDATE users SET "hasCompletedTutorial" = false WHERE email = 'votre@email.com';
+```
+
+---
+
+### **Erreur : "npm ERR! code ELIFECYCLE"**
+
+**Cause** : Erreur lors de l'exécution d'un script npm.
+
+**Solution** :
+```bash
+# Nettoyer le cache npm
+npm cache clean --force
+
+# Réinstaller
+rm -rf node_modules package-lock.json
+npm install
+```
+
+---
+
+### **Besoin d'Aide Supplémentaire ?**
+
+Si vous rencontrez un problème non listé :
+1. Vérifiez les logs dans le terminal
+2. Consultez les DevTools du navigateur (F12 → Console)
+3. Vérifiez que toutes les variables d'environnement sont définies
+4. Essayez de redémarrer le serveur de développement
+
+---
+
 ## 👤 Comptes de Connexion
 
 ### **Compte Administrateur (Production)**
@@ -723,7 +914,7 @@ La documentation détaillée se trouve dans le dossier `docs/` :
 **Développeur** : Falilou  
 **GitHub** : [github.com/Falilou2099/Bogue](https://github.com/Falilou2099/Bogue)  
 **Version** : 1.0.0  
-**Date** : Décembre 2024
+**Date** : Décembre 2025
 
 ---
 
