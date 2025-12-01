@@ -33,8 +33,8 @@ export default function AuditPage() {
   const [logs, setLogs] = useState<AuditLog[]>([])
   const [allUsers, setAllUsers] = useState<Array<{ id: string; name: string; email: string }>>([])
   const [filters, setFilters] = useState({
-    userId: "",
-    action: "",
+    userId: "all",
+    action: "all",
     ticketId: "",
   })
 
@@ -64,8 +64,8 @@ export default function AuditPage() {
   const fetchAuditLogs = async () => {
     try {
       const params = new URLSearchParams()
-      if (filters.userId) params.append("userId", filters.userId)
-      if (filters.action) params.append("action", filters.action)
+      if (filters.userId && filters.userId !== "all") params.append("userId", filters.userId)
+      if (filters.action && filters.action !== "all") params.append("action", filters.action)
       if (filters.ticketId) params.append("ticketId", filters.ticketId)
 
       const response = await fetch(`/api/audit?${params.toString()}`)
@@ -82,13 +82,13 @@ export default function AuditPage() {
 
   const clearFilters = () => {
     setFilters({
-      userId: "",
-      action: "",
+      userId: "all",
+      action: "all",
       ticketId: "",
     })
   }
 
-  const hasActiveFilters = filters.userId || filters.action || filters.ticketId
+  const hasActiveFilters = (filters.userId !== "all") || (filters.action !== "all") || filters.ticketId
 
   const getActionLabel = (action: string) => {
     const labels: Record<string, string> = {
@@ -207,7 +207,7 @@ export default function AuditPage() {
                   <SelectValue placeholder="Tous les utilisateurs" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Tous les utilisateurs</SelectItem>
+                  <SelectItem value="all">Tous les utilisateurs</SelectItem>
                   {allUsers.map((user) => (
                     <SelectItem key={user.id} value={user.id}>
                       {user.name}
@@ -227,7 +227,7 @@ export default function AuditPage() {
                   <SelectValue placeholder="Toutes les actions" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Toutes les actions</SelectItem>
+                  <SelectItem value="all">Toutes les actions</SelectItem>
                   <SelectItem value="CREATION">Création</SelectItem>
                   <SelectItem value="CHANGEMENT_STATUT">Changement de statut</SelectItem>
                   <SelectItem value="ASSIGNATION">Assignation</SelectItem>
