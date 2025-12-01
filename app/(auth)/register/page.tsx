@@ -19,6 +19,7 @@ export default function RegisterPage() {
   const [name, setName] = useState("")
   const [email, setEmail] = useState("")
   const [error, setError] = useState("")
+  const [consent, setConsent] = useState(false)
   const router = useRouter()
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -56,10 +57,11 @@ export default function RegisterPage() {
   }
 
   const passwordRequirements = [
-    { label: "Au moins 8 caractères", met: password.length >= 8 },
+    { label: "Au moins 12 caractères", met: password.length >= 12 },
     { label: "Une majuscule", met: /[A-Z]/.test(password) },
+    { label: "Une minuscule", met: /[a-z]/.test(password) },
     { label: "Un chiffre", met: /[0-9]/.test(password) },
-    { label: "Un caractère spécial", met: /[!@#$%^&*]/.test(password) },
+    { label: "Un caractère spécial", met: /[@$!%*?&]/.test(password) },
   ]
 
   return (
@@ -133,28 +135,37 @@ export default function RegisterPage() {
               />
             </div>
             <div className="flex items-start gap-2">
-              <Checkbox id="terms" className="mt-1" required />
-              <Label htmlFor="terms" className="text-sm font-normal leading-relaxed">
-                J'accepte les{" "}
-                <Link href="/terms" className="text-primary hover:underline">
-                  conditions d'utilisation
-                </Link>{" "}
-                et la{" "}
-                <Link href="/privacy" className="text-primary hover:underline">
+              <Checkbox 
+                id="consent" 
+                className="mt-1" 
+                checked={consent}
+                onCheckedChange={(checked) => setConsent(checked as boolean)}
+              />
+              <Label htmlFor="consent" className="text-sm font-normal leading-relaxed cursor-pointer">
+                J'accepte que mes données personnelles (nom, email) soient utilisées pour la gestion de mon compte et l'envoi de notifications liées à mes tickets. Consultez notre{" "}
+                <Link href="/legal" className="text-primary hover:underline font-medium">
                   politique de confidentialité
                 </Link>
+                .
               </Label>
             </div>
-            <Button type="submit" className="w-full" disabled={isLoading}>
+            <Button type="submit" className="w-full" disabled={isLoading || !consent}>
               {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Créer mon compte
             </Button>
           </form>
-          <div className="mt-6 text-center text-sm text-muted-foreground">
-            Déjà un compte ?{" "}
-            <Link href="/login" className="text-primary hover:underline">
-              Se connecter
-            </Link>
+          <div className="mt-6 space-y-2">
+            <div className="text-center text-sm text-muted-foreground">
+              Déjà un compte ?{" "}
+              <Link href="/login" className="text-primary hover:underline">
+                Se connecter
+              </Link>
+            </div>
+            <div className="text-center text-xs text-muted-foreground">
+              <Link href="/legal" className="hover:underline">
+                Mentions légales & Confidentialité
+              </Link>
+            </div>
           </div>
         </CardContent>
       </Card>

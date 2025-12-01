@@ -112,11 +112,18 @@ export default function LoginPage() {
                 Se connecter
               </Button>
             </form>
-            <div className="mt-6 text-center text-sm text-muted-foreground">
-              Pas encore de compte ?{" "}
-              <Link href="/register" className="text-primary hover:underline">
-                Créer un compte
-              </Link>
+            <div className="mt-6 space-y-2">
+              <div className="text-center text-sm text-muted-foreground">
+                Pas encore de compte ?{" "}
+                <Link href="/register" className="text-primary hover:underline">
+                  S'inscrire
+                </Link>
+              </div>
+              <div className="text-center text-xs text-muted-foreground">
+                <Link href="/legal" className="hover:underline">
+                  Mentions légales & Confidentialité
+                </Link>
+              </div>
             </div>
           </CardContent>
         </Card>

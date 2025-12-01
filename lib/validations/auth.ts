@@ -13,7 +13,7 @@ export const registerSchema = z.object({
     .max(255, "L'email ne peut pas dépasser 255 caractères"),
   password: z
     .string()
-    .min(8, "Le mot de passe doit contenir au moins 8 caractères")
+    .min(12, "Le mot de passe doit contenir au moins 12 caractères")
     .max(100, "Le mot de passe ne peut pas dépasser 100 caractères")
     .regex(
       /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/,
