@@ -496,35 +496,96 @@ git push origin main
 Dans Vercel, allez dans **Settings** → **Environment Variables** et ajoutez :
 
 ```bash
-# Base de données (même URL que local)
+# Base de données Neon (Production)
 DATABASE_URL=postgresql://user:password@ep-xxx.eu-central-1.aws.neon.tech/neondb?sslmode=require&pgbouncer=true
 
-# Secret JWT (généré avec node)
-NEXTAUTH_SECRET=Lgp102SArOPY/N5SnVi0OZD8z0LWnITDqwthu5dNR2o=
+# Secret JWT (GÉNÉRER UN NOUVEAU pour la production)
+# Commande: node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
+NEXTAUTH_SECRET=VotreNouveauSecretJWTGenerePourProduction
 
 # URL de production (fournie par Vercel après déploiement)
 NEXTAUTH_URL=https://votre-app.vercel.app
+
+# Node environment
+NODE_ENV=production
 ```
 
-**Important** : Pour `NEXTAUTH_URL`, utilisez l'URL que Vercel vous donne après le premier déploiement, puis redéployez.
+**⚠️ IMPORTANT** :
+- Générez un **NOUVEAU** `NEXTAUTH_SECRET` pour la production (ne réutilisez pas celui du développement)
+- Pour `NEXTAUTH_URL`, utilisez l'URL que Vercel vous donne après le premier déploiement, puis redéployez
+- Vérifiez que `DATABASE_URL` pointe vers votre base Neon avec `?pgbouncer=true`
 
-### **Étape 4 : Déployer**
+### **Étape 4 : Initialiser la Base de Données de Production**
+
+Après le premier déploiement, connectez-vous à votre base Neon et exécutez :
+
+```bash
+# Option 1 : Via Neon SQL Editor
+# Copiez et exécutez le contenu de scripts/create-admin.sql
+
+# Option 2 : En local avec la DATABASE_URL de production
+DATABASE_URL="postgresql://..." npx prisma db push
+DATABASE_URL="postgresql://..." npm run db:create-admin
+```
+
+**Compte admin créé** :
+- Email : `admin@ticketflow.com`
+- Mot de passe : `AdminPassword123!`
+
+⚠️ **Changez ce mot de passe immédiatement après la première connexion !**
+
+### **Étape 5 : Déployer**
 
 Cliquez sur **"Deploy"**. Vercel va :
-1. Installer les dépendances
-2. Builder l'application
-3. Déployer sur HTTPS
+1. Installer les dépendances (`npm install`)
+2. Exécuter `postinstall` → `prisma generate` ✅
+3. Builder l'application (`npm run build`)
+4. Déployer sur HTTPS
 
 **Temps estimé** : 2-3 minutes
 
-### **Étape 5 : Vérifier le Déploiement**
+### **Étape 6 : Vérifier le Déploiement**
 
-1. ✅ HTTPS actif (URL commence par `https://`)
-2. ✅ Connexion fonctionne
-3. ✅ Rate limiting actif (testez 6 connexions échouées)
-4. ✅ Logs d'audit enregistrés
+#### **Tests de Sécurité**
+1. ✅ **HTTPS actif** : URL commence par `https://`
+2. ✅ **Connexion admin** : Testez avec `admin@ticketflow.com` / `AdminPassword123!`
+3. ✅ **Rate limiting** : Testez 6 connexions échouées → erreur 429
+4. ✅ **Logs d'audit** : Vérifiez dans `/admin/audit`
+5. ✅ **Tutoriel onboarding** : Créez un nouvel utilisateur → tutoriel s'affiche
+6. ✅ **Permissions RBAC** : Connectez-vous avec différents rôles
+
+#### **Tests Fonctionnels**
+- ✅ Création de ticket
+- ✅ Assignation de ticket
+- ✅ Commentaires
+- ✅ Notifications
+- ✅ Base de connaissances
+- ✅ Dashboard analytics
 
 **Score final** : **100/100** 🎉
+
+---
+
+## 🔐 Sécurité en Production
+
+### **Checklist Post-Déploiement**
+
+- [ ] Changer le mot de passe admin par défaut
+- [ ] Vérifier que `NEXTAUTH_SECRET` est unique (différent du dev)
+- [ ] Tester le rate limiting (5 tentatives max)
+- [ ] Vérifier les logs d'audit dans `/admin/audit`
+- [ ] Tester les permissions RBAC (agent ne voit pas tous les tickets)
+- [ ] Vérifier les headers CSP (DevTools → Network → Headers)
+- [ ] Confirmer que les mots de passe sont hachés en base
+- [ ] Tester le tutoriel onboarding pour nouveaux utilisateurs
+
+### **Monitoring Recommandé**
+
+Pour une surveillance continue en production :
+- **Sentry** : Monitoring d'erreurs (via `SENTRY_DSN`)
+- **Vercel Analytics** : Performance et Core Web Vitals
+- **Neon Monitoring** : Surveillance base de données
+- **Logs d'audit** : Vérification régulière dans `/admin/audit`
 
 ---
 
