@@ -27,6 +27,7 @@ export interface User {
   createdAt: Date
   updatedAt: Date
   twoFactorEnabled: boolean
+  hasCompletedTutorial: boolean
 }
 
 export interface UserSession {
