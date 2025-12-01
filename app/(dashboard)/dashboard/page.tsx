@@ -9,6 +9,8 @@ import { Progress } from "@/components/ui/progress"
 import { Ticket, Clock, CheckCircle, TrendingUp, ArrowUpRight, ArrowDownRight, Plus, Filter } from "lucide-react"
 import Link from "next/link"
 import { useAuth } from "@/lib/auth-context"
+import { usePermissions } from "@/hooks/use-permissions"
+import { UnassignedTicketsBanner } from "@/components/tickets/unassigned-tickets-banner"
 import { STATUS_LABELS, STATUS_COLORS, PRIORITY_LABELS, PRIORITY_COLORS } from "@/lib/constants"
 import type { Ticket as TicketType, DashboardStats } from "@/lib/types"
 import {
@@ -29,6 +31,7 @@ import {
 
 export default function DashboardPage() {
   const { user, hasRole } = useAuth()
+  const { canView } = usePermissions()
   const isAdmin = hasRole(["admin", "manager"])
   
   const [tickets, setTickets] = useState<TicketType[]>([])
@@ -67,7 +70,7 @@ export default function DashboardPage() {
     fetchData()
   }, [])
 
-  const stats = [
+  const baseStats = [
     {
       title: "Tickets Ouverts",
       value: dashboardStats?.ticketsOuverts || 0,
@@ -95,19 +98,29 @@ export default function DashboardPage() {
       color: "text-green-500",
       bg: "bg-green-500/10",
     },
-    {
-      title: "Respect SLA",
-      value: `${dashboardStats?.tauxSlaRespect || 0}%`,
-      icon: TrendingUp,
-      trend: "+2.1%",
-      trendUp: true,
-      color: "text-primary",
-      bg: "bg-primary/10",
-    },
   ]
 
+  // Ajouter la carte SLA uniquement si l'utilisateur a la permission
+  const stats = canView.performanceMetrics
+    ? [
+        ...baseStats,
+        {
+          title: "Respect SLA",
+          value: `${dashboardStats?.tauxSlaRespect || 0}%`,
+          icon: TrendingUp,
+          trend: "+2.1%",
+          trendUp: true,
+          color: "text-primary",
+          bg: "bg-primary/10",
+        },
+      ]
+    : baseStats
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 w-full max-w-full overflow-x-hidden">
+      {/* Bannière des tickets non assignés (visible uniquement pour agents et managers) */}
+      <UnassignedTicketsBanner />
+      
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
@@ -123,7 +136,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className={`grid gap-4 sm:grid-cols-2 ${canView.performanceMetrics ? 'lg:grid-cols-4' : 'lg:grid-cols-3'}`}>
         {stats.map((stat) => (
           <Card key={stat.title}>
             <CardContent className="p-6">

@@ -23,9 +23,16 @@ export default function ArticlePage() {
   const router = useRouter()
   const [article, setArticle] = useState<Article | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [hasVoted, setHasVoted] = useState<'helpful' | 'notHelpful' | null>(null)
+  const [isVoting, setIsVoting] = useState(false)
 
   useEffect(() => {
     if (params.id) {
+      // Incrémenter le nombre de vues
+      fetch(`/api/articles/${params.id}/view`, { method: 'POST' })
+        .catch(() => {})
+
+      // Charger l'article
       fetch(`/api/articles/${params.id}`)
         .then((res) => res.json())
         .then((data) => {
@@ -40,6 +47,31 @@ export default function ArticlePage() {
         })
     }
   }, [params.id])
+
+  const handleVote = async (type: 'helpful' | 'notHelpful') => {
+    if (hasVoted || isVoting || !article) return
+
+    setIsVoting(true)
+    try {
+      const res = await fetch(`/api/articles/${params.id}/vote`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type }),
+      })
+
+      if (res.ok) {
+        const data = await res.json()
+        if (data.success) {
+          setArticle(data.article)
+          setHasVoted(type)
+        }
+      }
+    } catch (error) {
+      console.error('Erreur lors du vote:', error)
+    } finally {
+      setIsVoting(false)
+    }
+  }
 
   if (error || !article) {
     return (
@@ -134,15 +166,30 @@ export default function ArticlePage() {
         </CardHeader>
         <CardContent>
           <div className="flex items-center gap-4">
-            <Button variant="outline" className="gap-2">
-              <ThumbsUp className="h-4 w-4" />
+            <Button 
+              variant={hasVoted === 'helpful' ? 'default' : 'outline'}
+              className="gap-2 transition-all hover:scale-105 active:scale-95"
+              onClick={() => handleVote('helpful')}
+              disabled={hasVoted !== null || isVoting}
+            >
+              <ThumbsUp className={`h-4 w-4 transition-transform ${hasVoted === 'helpful' ? 'animate-bounce' : ''}`} />
               Oui ({article.helpful})
             </Button>
-            <Button variant="outline" className="gap-2">
-              <ThumbsDown className="h-4 w-4" />
+            <Button 
+              variant={hasVoted === 'notHelpful' ? 'default' : 'outline'}
+              className="gap-2 transition-all hover:scale-105 active:scale-95"
+              onClick={() => handleVote('notHelpful')}
+              disabled={hasVoted !== null || isVoting}
+            >
+              <ThumbsDown className={`h-4 w-4 transition-transform ${hasVoted === 'notHelpful' ? 'animate-bounce' : ''}`} />
               Non ({article.notHelpful})
             </Button>
           </div>
+          {hasVoted && (
+            <p className="text-sm text-muted-foreground mt-3 animate-in fade-in slide-in-from-bottom-2">
+              Merci pour votre retour !
+            </p>
+          )}
         </CardContent>
       </Card>
     </div>

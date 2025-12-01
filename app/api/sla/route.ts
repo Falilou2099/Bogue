@@ -1,8 +1,18 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
+import { requireAuth } from "@/lib/auth-middleware"
 
 export async function GET(request: NextRequest) {
   try {
+    // Vérifier l'authentification
+    const authResult = await requireAuth(request, {
+      requiredPermissions: ["sla:view"],
+    })
+    
+    if (authResult instanceof NextResponse) {
+      return authResult
+    }
+    
     const slas = await prisma.sLA.findMany({
       orderBy: {
         responseTime: "asc",

@@ -1,9 +1,35 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
+import { requireAuth } from "@/lib/auth-middleware"
+import { canViewAllTickets } from "@/lib/permissions"
 
 export async function GET(request: NextRequest) {
   try {
+    // Vérifier l'authentification
+    const authResult = await requireAuth(request)
+    
+    if (authResult instanceof NextResponse) {
+      return authResult
+    }
+    
+    const { user } = authResult
+    
+    // Vérifier si on demande uniquement les tickets non assignés
+    const { searchParams } = new URL(request.url)
+    const unassignedOnly = searchParams.get('unassigned') === 'true'
+    
+    // Filtrer les tickets selon le rôle
+    let whereClause: any = canViewAllTickets(user.role)
+      ? {} // Admin, Manager, Agent peuvent voir tous les tickets
+      : { createdById: user.id } // Demandeur ne voit que ses propres tickets
+    
+    // Ajouter le filtre des tickets non assignés si demandé
+    if (unassignedOnly && canViewAllTickets(user.role)) {
+      whereClause.assignedToId = null
+    }
+    
     const tickets = await prisma.ticket.findMany({
+      where: whereClause,
       include: {
         category: true,
         createdBy: {
@@ -104,17 +130,32 @@ export async function POST(request: NextRequest) {
       },
     })
 
-    // Créer une notification pour l'utilisateur
+    // Récupérer tous les utilisateurs (admins, managers, agents) pour les notifier
+    const usersToNotify = await prisma.user.findMany({
+      where: {
+        OR: [
+          { role: "ADMIN" },
+          { role: "MANAGER" },
+          { role: "AGENT" },
+          { id: userId }, // Le créateur du ticket
+        ],
+      },
+      select: { id: true },
+    })
+
+    // Créer des notifications pour tous les utilisateurs concernés
+    const notifications = usersToNotify.map((user) => ({
+      userId: user.id,
+      type: "NOUVEAU_TICKET" as const,
+      title: user.id === userId ? "Ticket créé" : "Nouveau ticket",
+      message: user.id === userId 
+        ? `Votre ticket #${ticket.id} a été créé avec succès`
+        : `Un nouveau ticket #${ticket.id} a été créé par ${ticket.createdBy.name}`,
+      ticketId: ticket.id,
+    }))
+
     await prisma.notification.createMany({
-      data: [
-        {
-          userId: userId,
-          type: "NOUVEAU_TICKET",
-          title: "Ticket créé",
-          message: `Votre ticket #${ticket.id} a été créé avec succès`,
-          ticketId: ticket.id,
-        },
-      ],
+      data: notifications,
     })
 
     // Créer une entrée dans l'historique

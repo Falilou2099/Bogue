@@ -1,8 +1,18 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
+import { requireAuth } from "@/lib/auth-middleware"
 
 export async function GET(request: NextRequest) {
   try {
+    // Vérifier l'authentification
+    const authResult = await requireAuth(request, {
+      requiredPermissions: ["kb:view"],
+    })
+    
+    if (authResult instanceof NextResponse) {
+      return authResult
+    }
+    
     const articles = await prisma.article.findMany({
       include: {
         category: true,
@@ -33,35 +43,19 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    // Vérifier l'authentification
-    const token = request.cookies.get("auth-token")?.value
-
-    if (!token) {
-      return NextResponse.json(
-        { success: false, error: "Non authentifié" },
-        { status: 401 }
-      )
-    }
-
-    // Vérifier le rôle (seuls admin, manager et agent peuvent créer des articles)
-    const { jwtVerify } = await import("jose")
-    const JWT_SECRET = new TextEncoder().encode(
-      process.env.NEXTAUTH_SECRET || "votre-secret-jwt-super-securise-changez-moi"
-    )
+    // Vérifier l'authentification et les permissions (ADMIN et MANAGER uniquement)
+    const authResult = await requireAuth(request, {
+      requiredPermissions: ["kb:create"],
+    })
     
-    const { payload } = await jwtVerify(token, JWT_SECRET)
-    const userRole = (payload.role as string)?.toLowerCase()
-    const userId = payload.userId as string
-
-    if (!['admin', 'manager', 'agent'].includes(userRole)) {
-      return NextResponse.json(
-        { success: false, error: "Permissions insuffisantes" },
-        { status: 403 }
-      )
+    if (authResult instanceof NextResponse) {
+      return authResult
     }
+    
+    const { user } = authResult
 
     const body = await request.json()
-    const { title, content, categoryId, tags, published } = body
+    const { title, content, categoryId } = body
 
     if (!title || !content || !categoryId) {
       return NextResponse.json(
@@ -75,9 +69,7 @@ export async function POST(request: NextRequest) {
         title,
         content,
         categoryId,
-        authorId: userId,
-        tags: tags || [],
-        published: published || false,
+        authorId: user.id,
       },
       include: {
         category: true,
