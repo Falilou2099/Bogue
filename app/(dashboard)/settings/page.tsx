@@ -12,7 +12,7 @@ import { Separator } from "@/components/ui/separator"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { useAuth } from "@/lib/auth-context"
-import { User, Bell, Shield, Palette, Globe, Key, Smartphone, Mail, Save, Upload, Trash2, Plus } from "lucide-react"
+import { User, Bell, Shield, Palette, Key, Smartphone, Save, Upload, Trash2 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 
 export default function SettingsPage() {
@@ -21,8 +21,7 @@ export default function SettingsPage() {
   const [saving, setSaving] = useState(false)
 
   const [profile, setProfile] = useState({
-    firstName: user?.firstName || "",
-    lastName: user?.lastName || "",
+    name: user?.name || "",
     email: user?.email || "",
     phone: "+33 6 12 34 56 78",
     department: "Support",
@@ -30,10 +29,6 @@ export default function SettingsPage() {
   })
 
   const [notifications, setNotifications] = useState({
-    emailNewTicket: true,
-    emailTicketUpdate: true,
-    emailMention: true,
-    emailDigest: false,
     pushNewTicket: true,
     pushChat: true,
     pushMention: true,
@@ -57,12 +52,39 @@ export default function SettingsPage() {
 
   const handleSave = async () => {
     setSaving(true)
-    await new Promise((resolve) => setTimeout(resolve, 1000))
-    setSaving(false)
-    toast({
-      title: "Paramètres enregistrés",
-      description: "Vos modifications ont été sauvegardées avec succès.",
-    })
+    try {
+      // Mise à jour du profil
+      const response = await fetch(`/api/users/${user?.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: profile.name,
+          email: profile.email,
+        }),
+      })
+
+      if (response.ok) {
+        toast({
+          title: "Paramètres enregistrés",
+          description: "Vos modifications ont été sauvegardées avec succès.",
+        })
+      } else {
+        const data = await response.json()
+        toast({
+          title: "Erreur",
+          description: data.error || "Impossible de sauvegarder les modifications",
+          variant: "destructive",
+        })
+      }
+    } catch (error) {
+      toast({
+        title: "Erreur",
+        description: "Erreur de connexion au serveur",
+        variant: "destructive",
+      })
+    } finally {
+      setSaving(false)
+    }
   }
 
   return (
@@ -73,7 +95,7 @@ export default function SettingsPage() {
       </div>
 
       <Tabs defaultValue="profile" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-5 lg:w-auto lg:inline-grid">
+        <TabsList className="grid w-full grid-cols-4 lg:w-auto lg:inline-grid">
           <TabsTrigger value="profile" className="gap-2">
             <User className="h-4 w-4" />
             <span className="hidden sm:inline">Profil</span>
@@ -90,10 +112,6 @@ export default function SettingsPage() {
             <Palette className="h-4 w-4" />
             <span className="hidden sm:inline">Préférences</span>
           </TabsTrigger>
-          <TabsTrigger value="integrations" className="gap-2">
-            <Globe className="h-4 w-4" />
-            <span className="hidden sm:inline">Intégrations</span>
-          </TabsTrigger>
         </TabsList>
 
         {/* Profile Tab */}
@@ -107,8 +125,7 @@ export default function SettingsPage() {
               <Avatar className="h-24 w-24">
                 <AvatarImage src={user?.avatar || "/placeholder.svg"} />
                 <AvatarFallback className="text-2xl">
-                  {user?.firstName?.[0]}
-                  {user?.lastName?.[0]}
+                  {user?.name?.split(" ").map(n => n[0]).join("") || "U"}
                 </AvatarFallback>
               </Avatar>
               <div className="flex flex-col gap-2">
@@ -130,23 +147,13 @@ export default function SettingsPage() {
               <CardDescription>Mettez à jour vos informations de profil</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="firstName">Prénom</Label>
-                  <Input
-                    id="firstName"
-                    value={profile.firstName}
-                    onChange={(e) => setProfile({ ...profile, firstName: e.target.value })}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="lastName">Nom</Label>
-                  <Input
-                    id="lastName"
-                    value={profile.lastName}
-                    onChange={(e) => setProfile({ ...profile, lastName: e.target.value })}
-                  />
-                </div>
+              <div className="space-y-2">
+                <Label htmlFor="name">Nom complet</Label>
+                <Input
+                  id="name"
+                  value={profile.name}
+                  onChange={(e) => setProfile({ ...profile, name: e.target.value })}
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
@@ -189,61 +196,6 @@ export default function SettingsPage() {
 
         {/* Notifications Tab */}
         <TabsContent value="notifications" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Mail className="h-5 w-5" />
-                Notifications par email
-              </CardTitle>
-              <CardDescription>Choisissez quand recevoir des emails</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-medium">Nouveau ticket assigné</p>
-                  <p className="text-sm text-muted-foreground">Recevez un email quand un ticket vous est assigné</p>
-                </div>
-                <Switch
-                  checked={notifications.emailNewTicket}
-                  onCheckedChange={(checked) => setNotifications({ ...notifications, emailNewTicket: checked })}
-                />
-              </div>
-              <Separator />
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-medium">Mise à jour de ticket</p>
-                  <p className="text-sm text-muted-foreground">Recevez un email quand un ticket est mis à jour</p>
-                </div>
-                <Switch
-                  checked={notifications.emailTicketUpdate}
-                  onCheckedChange={(checked) => setNotifications({ ...notifications, emailTicketUpdate: checked })}
-                />
-              </div>
-              <Separator />
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-medium">Mentions</p>
-                  <p className="text-sm text-muted-foreground">Recevez un email quand quelqu'un vous mentionne</p>
-                </div>
-                <Switch
-                  checked={notifications.emailMention}
-                  onCheckedChange={(checked) => setNotifications({ ...notifications, emailMention: checked })}
-                />
-              </div>
-              <Separator />
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-medium">Résumé quotidien</p>
-                  <p className="text-sm text-muted-foreground">Recevez un résumé de l'activité chaque jour</p>
-                </div>
-                <Switch
-                  checked={notifications.emailDigest}
-                  onCheckedChange={(checked) => setNotifications({ ...notifications, emailDigest: checked })}
-                />
-              </div>
-            </CardContent>
-          </Card>
-
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -504,70 +456,6 @@ export default function SettingsPage() {
           </Card>
         </TabsContent>
 
-        {/* Integrations Tab */}
-        <TabsContent value="integrations" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Intégrations connectées</CardTitle>
-              <CardDescription>Gérez vos applications tierces</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center justify-between p-4 border rounded-lg">
-                <div className="flex items-center gap-4">
-                  <div className="h-10 w-10 rounded bg-[#4A154B] flex items-center justify-center">
-                    <span className="text-white font-bold">S</span>
-                  </div>
-                  <div>
-                    <p className="font-medium">Slack</p>
-                    <p className="text-sm text-muted-foreground">Recevez des notifications dans Slack</p>
-                  </div>
-                </div>
-                <Badge className="bg-green-500">Connecté</Badge>
-              </div>
-              <div className="flex items-center justify-between p-4 border rounded-lg">
-                <div className="flex items-center gap-4">
-                  <div className="h-10 w-10 rounded bg-[#0052CC] flex items-center justify-center">
-                    <span className="text-white font-bold">J</span>
-                  </div>
-                  <div>
-                    <p className="font-medium">Jira</p>
-                    <p className="text-sm text-muted-foreground">Synchronisez les tickets avec Jira</p>
-                  </div>
-                </div>
-                <Button variant="outline" size="sm">
-                  Connecter
-                </Button>
-              </div>
-              <div className="flex items-center justify-between p-4 border rounded-lg">
-                <div className="flex items-center gap-4">
-                  <div className="h-10 w-10 rounded bg-[#00A4EF] flex items-center justify-center">
-                    <span className="text-white font-bold">T</span>
-                  </div>
-                  <div>
-                    <p className="font-medium">Microsoft Teams</p>
-                    <p className="text-sm text-muted-foreground">Intégration avec Microsoft Teams</p>
-                  </div>
-                </div>
-                <Button variant="outline" size="sm">
-                  Connecter
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Webhooks</CardTitle>
-              <CardDescription>Configurez des webhooks pour automatiser vos workflows</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button variant="outline">
-                <Plus className="mr-2 h-4 w-4" />
-                Ajouter un webhook
-              </Button>
-            </CardContent>
-          </Card>
-        </TabsContent>
       </Tabs>
 
       {/* Save Button */}
