@@ -89,49 +89,50 @@ export default function ArticlePage() {
   }
 
   return (
-    <div className="space-y-6 max-w-4xl mx-auto">
+    <div className="space-y-8 px-6 py-8">
       {/* Header avec bouton retour */}
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-6">
         <Button
           variant="ghost"
-          size="icon"
+          size="lg"
           onClick={() => router.push("/knowledge-base")}
+          className="hover:bg-primary/10"
         >
-          <ArrowLeft className="h-5 w-5" />
+          <ArrowLeft className="h-6 w-6" />
         </Button>
         <div className="flex-1">
-          <h1 className="text-3xl font-bold">{article.title}</h1>
+          <h1 className="text-4xl font-bold">{article.title}</h1>
         </div>
       </div>
 
       {/* Métadonnées de l'article */}
-      <Card>
-        <CardContent className="pt-6">
-          <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+      <Card className="shadow-lg border-2">
+        <CardContent className="pt-8 pb-8">
+          <div className="flex flex-wrap items-center gap-6 text-base text-muted-foreground">
             {article.category && (
-              <Badge variant="secondary">{article.category.name}</Badge>
+              <Badge variant="secondary" className="text-sm px-4 py-2">{article.category.name}</Badge>
             )}
-            <div className="flex items-center gap-1">
-              <Eye className="h-4 w-4" />
-              <span>{article.views.toLocaleString()} vues</span>
+            <div className="flex items-center gap-2">
+              <Eye className="h-5 w-5" />
+              <span className="font-medium">{article.views.toLocaleString()} vues</span>
             </div>
-            <div className="flex items-center gap-1">
-              <Calendar className="h-4 w-4" />
-              <span>
+            <div className="flex items-center gap-2">
+              <Calendar className="h-5 w-5" />
+              <span className="font-medium">
                 Mis à jour le{" "}
                 {new Date(article.updatedAt).toLocaleDateString("fr-FR")}
               </span>
             </div>
           </div>
 
-          <Separator className="my-4" />
+          <Separator className="my-6" />
 
           {/* Auteur */}
           {article.author && (
-            <div className="flex items-center gap-3">
-              <Avatar className="h-10 w-10">
+            <div className="flex items-center gap-4">
+              <Avatar className="h-14 w-14">
                 <AvatarImage src={article.author.avatar || "/placeholder.svg"} />
-                <AvatarFallback>
+                <AvatarFallback className="text-lg">
                   {article.author.name
                     .split(" ")
                     .map((n) => n[0])
@@ -139,8 +140,8 @@ export default function ArticlePage() {
                 </AvatarFallback>
               </Avatar>
               <div>
-                <p className="text-sm font-medium">Par {article.author.name}</p>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-base font-semibold">Par {article.author.name}</p>
+                <p className="text-sm text-muted-foreground">
                   {article.author.email}
                 </p>
               </div>
@@ -150,43 +151,46 @@ export default function ArticlePage() {
       </Card>
 
       {/* Contenu de l'article */}
-      <Card>
-        <CardContent className="pt-6">
+      <Card className="shadow-lg border-2">
+        <CardContent className="pt-12 pb-12 px-12">
           <div
-            className="prose prose-slate dark:prose-invert max-w-none"
+            className="prose prose-xl prose-slate dark:prose-invert max-w-none leading-relaxed"
+            style={{ fontSize: '1.25rem', lineHeight: '1.9' }}
             dangerouslySetInnerHTML={{ __html: article.content }}
           />
         </CardContent>
       </Card>
 
       {/* Section d'évaluation */}
-      <Card>
-        <CardHeader>
-          <h3 className="text-lg font-semibold">Cet article vous a-t-il été utile ?</h3>
+      <Card className="shadow-lg border-2">
+        <CardHeader className="pb-4">
+          <h3 className="text-xl font-semibold">Cet article vous a-t-il été utile ?</h3>
         </CardHeader>
-        <CardContent>
-          <div className="flex items-center gap-4">
+        <CardContent className="pb-8">
+          <div className="flex items-center gap-6">
             <Button 
               variant={hasVoted === 'helpful' ? 'default' : 'outline'}
-              className="gap-2 transition-all hover:scale-105 active:scale-95"
+              size="lg"
+              className="gap-3 transition-all hover:scale-105 active:scale-95 px-8 py-6 text-base"
               onClick={() => handleVote('helpful')}
               disabled={hasVoted !== null || isVoting}
             >
-              <ThumbsUp className={`h-4 w-4 transition-transform ${hasVoted === 'helpful' ? 'animate-bounce' : ''}`} />
+              <ThumbsUp className={`h-5 w-5 transition-transform ${hasVoted === 'helpful' ? 'animate-bounce' : ''}`} />
               Oui ({article.helpful})
             </Button>
             <Button 
               variant={hasVoted === 'notHelpful' ? 'default' : 'outline'}
-              className="gap-2 transition-all hover:scale-105 active:scale-95"
+              size="lg"
+              className="gap-3 transition-all hover:scale-105 active:scale-95 px-8 py-6 text-base"
               onClick={() => handleVote('notHelpful')}
               disabled={hasVoted !== null || isVoting}
             >
-              <ThumbsDown className={`h-4 w-4 transition-transform ${hasVoted === 'notHelpful' ? 'animate-bounce' : ''}`} />
+              <ThumbsDown className={`h-5 w-5 transition-transform ${hasVoted === 'notHelpful' ? 'animate-bounce' : ''}`} />
               Non ({article.notHelpful})
             </Button>
           </div>
           {hasVoted && (
-            <p className="text-sm text-muted-foreground mt-3 animate-in fade-in slide-in-from-bottom-2">
+            <p className="text-base text-muted-foreground mt-4 animate-in fade-in slide-in-from-bottom-2">
               Merci pour votre retour !
             </p>
           )}
