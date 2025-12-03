@@ -4,7 +4,6 @@ import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { X, ArrowRight, Check } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { cn } from "@/lib/utils"
 import { useTutorial } from "@/lib/tutorial-context"
 
 interface TutorialStep {
@@ -142,58 +141,61 @@ export function InteractiveTutorial({ onComplete, onSkip }: InteractiveTutorialP
         const element = document.querySelector(step.target) as HTMLElement
         if (element) {
           setTargetElement(element)
-          
-          // Highlight l'élément
-          element.classList.add("tutorial-highlight")
-          element.style.position = "relative"
-          element.style.zIndex = "9999"
-          
-          // Scroll vers l'élément
-          element.scrollIntoView({ behavior: "smooth", block: "center" })
-          
-          // Calculer position de la carte en fonction de l'élément et de la position
-          setTimeout(() => {
-            const rect = element.getBoundingClientRect()
-            const cardWidth = 400
-            const cardHeight = 300
-            const padding = 20
-            
-            let top = 0
-            let left = 0
-            
-            switch (step.position) {
-              case "top":
-                top = rect.top - cardHeight - padding
-                left = rect.left + rect.width / 2 - cardWidth / 2
-                break
-              case "bottom":
-                top = rect.bottom + padding
-                left = rect.left + rect.width / 2 - cardWidth / 2
-                break
-              case "left":
-                top = rect.top + rect.height / 2 - cardHeight / 2
-                left = rect.left - cardWidth - padding
-                break
-              case "right":
-                top = rect.top + rect.height / 2 - cardHeight / 2
-                left = rect.right + padding
-                break
-            }
-            
-            // S'assurer que la carte reste dans la fenêtre
-            top = Math.max(padding, Math.min(top, window.innerHeight - cardHeight - padding))
-            left = Math.max(padding, Math.min(left, window.innerWidth - cardWidth - padding))
-            
-            setCardPosition({ top, left })
-          }, 100)
+          highlightElement(element)
+          scrollToElement(element)
+          calculateCardPosition(element)
         }
       }
+    }
+
+    function highlightElement(element: HTMLElement) {
+      element.classList.add("tutorial-highlight")
+    }
+
+    function scrollToElement(element: HTMLElement) {
+      element.scrollIntoView({ behavior: "smooth", block: "center" })
+    }
+
+    function calculateCardPosition(element: HTMLElement) {
+      setTimeout(() => {
+        const rect = element.getBoundingClientRect()
+        const cardWidth = 400
+        const cardHeight = 300
+        const padding = 20
+        
+        let top = 0
+        let left = 0
+        
+        switch (step.position) {
+          case "top":
+            top = rect.top - cardHeight - padding
+            left = rect.left + rect.width / 2 - cardWidth / 2
+            break
+          case "bottom":
+            top = rect.bottom + padding
+            left = rect.left + rect.width / 2 - cardWidth / 2
+            break
+          case "left":
+            top = rect.top + rect.height / 2 - cardHeight / 2
+            left = rect.left - cardWidth - padding
+            break
+          case "right":
+            top = rect.top + rect.height / 2 - cardHeight / 2
+            left = rect.right + padding
+            break
+        }
+        
+        // S'assurer que la carte reste dans la fenêtre
+        top = Math.max(padding, Math.min(top, window.innerHeight - cardHeight - padding))
+        left = Math.max(padding, Math.min(left, window.innerWidth - cardWidth - padding))
+        
+        setCardPosition({ top, left })
+      }, 100)
     }
 
     return () => {
       if (targetElement) {
         targetElement.classList.remove("tutorial-highlight")
-        targetElement.style.zIndex = ""
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -311,23 +313,6 @@ export function InteractiveTutorial({ onComplete, onSkip }: InteractiveTutorialP
         </button>
       </div>
 
-      {/* Styles pour le highlight */}
-      <style jsx global>{`
-        .tutorial-highlight {
-          box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.5), 0 0 0 8px rgba(59, 130, 246, 0.2) !important;
-          border-radius: 8px !important;
-          animation: pulse-highlight 2s infinite;
-        }
-
-        @keyframes pulse-highlight {
-          0%, 100% {
-            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.5), 0 0 0 8px rgba(59, 130, 246, 0.2);
-          }
-          50% {
-            box-shadow: 0 0 0 6px rgba(59, 130, 246, 0.6), 0 0 0 12px rgba(59, 130, 246, 0.3);
-          }
-        }
-      `}</style>
     </>
   )
 }
