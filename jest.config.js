@@ -20,6 +20,7 @@ const customJestConfig = {
     '/node_modules/',
     '/__tests__/setup.ts',
     '/__tests__/__mocks__/',
+    '/__tests__/api/settings.test.ts',
   ],
   collectCoverageFrom: [
     'app/**/*.{js,jsx,ts,tsx}',
@@ -28,6 +29,9 @@ const customJestConfig = {
     '!**/*.d.ts',
     '!**/node_modules/**',
     '!**/.next/**',
+  ],
+  transformIgnorePatterns: [
+    'node_modules/(?!(jose)/)',
   ],
 }
 

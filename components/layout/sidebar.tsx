@@ -25,7 +25,7 @@ import {
 
 const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { name: "Tickets", href: "/tickets", icon: Ticket, badge: 3 },
+  { name: "Tickets", href: "/tickets", icon: Ticket },
   { name: "Base de connaissances", href: "/knowledge-base", icon: BookOpen },
 ]
 

@@ -1,9 +1,11 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { X, ArrowRight, Check } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
+import { useTutorial } from "@/lib/tutorial-context"
 
 interface TutorialStep {
   id: string
@@ -12,6 +14,7 @@ interface TutorialStep {
   target: string // Sélecteur CSS de l'élément à pointer
   position: "top" | "bottom" | "left" | "right"
   action?: string // Action attendue (optionnel)
+  navigateTo?: string // URL vers laquelle naviguer (optionnel)
 }
 
 const TUTORIAL_STEPS: TutorialStep[] = [
@@ -35,7 +38,8 @@ const TUTORIAL_STEPS: TutorialStep[] = [
     title: "📋 Liste des tickets",
     description: "Ici vous trouverez tous vos tickets. Vous pouvez les filtrer par statut : Tous, Ouverts, En cours, ou Résolus.",
     target: "[data-tutorial='tickets-tabs']",
-    position: "bottom",
+    position: "top",
+    navigateTo: "/tickets",
   },
   {
     id: "search",
@@ -64,6 +68,21 @@ const TUTORIAL_STEPS: TutorialStep[] = [
     description: "Consultez les articles d'aide et les guides pour résoudre vos problèmes rapidement.",
     target: "[data-tutorial='sidebar-kb']",
     position: "right",
+    navigateTo: "/knowledge-base",
+  },
+  {
+    id: "kb-search",
+    title: "🔍 Recherche dans la base",
+    description: "Trouvez rapidement des articles et des guides pour résoudre vos problèmes.",
+    target: "[data-tutorial='kb-search']",
+    position: "bottom",
+  },
+  {
+    id: "kb-create",
+    title: "✍️ Créer un article",
+    description: "Les agents peuvent créer des articles pour partager leurs connaissances et aider les autres utilisateurs.",
+    target: "[data-tutorial='kb-create']",
+    position: "left",
   },
   {
     id: "notifications",
@@ -71,6 +90,7 @@ const TUTORIAL_STEPS: TutorialStep[] = [
     description: "Restez informé des mises à jour de vos tickets. Les notifications apparaissent ici en temps réel.",
     target: "[data-tutorial='notifications']",
     position: "bottom",
+    navigateTo: "/dashboard",
   },
   {
     id: "profile",
@@ -85,6 +105,7 @@ const TUTORIAL_STEPS: TutorialStep[] = [
     description: "Vous maîtrisez maintenant les bases de TicketFlow. N'hésitez pas à explorer davantage !",
     target: "",
     position: "bottom",
+    navigateTo: "/dashboard",
   },
 ]
 
@@ -94,33 +115,78 @@ interface InteractiveTutorialProps {
 }
 
 export function InteractiveTutorial({ onComplete, onSkip }: InteractiveTutorialProps) {
-  const [currentStep, setCurrentStep] = useState(0)
+  const router = useRouter()
   const [targetElement, setTargetElement] = useState<HTMLElement | null>(null)
-  const [arrowPosition, setArrowPosition] = useState({ top: 0, left: 0 })
+  const [cardPosition, setCardPosition] = useState({ top: 0, left: 0 })
+
+  // Importer le contexte du tutoriel
+  const { currentStep, setCurrentStep } = useTutorial()
 
   const step = TUTORIAL_STEPS[currentStep]
   const isLastStep = currentStep === TUTORIAL_STEPS.length - 1
 
   useEffect(() => {
-    if (step.target) {
-      const element = document.querySelector(step.target) as HTMLElement
-      if (element) {
-        setTargetElement(element)
-        
-        // Highlight l'élément
-        element.classList.add("tutorial-highlight")
-        element.style.position = "relative"
-        element.style.zIndex = "9999"
-        
-        // Scroll vers l'élément
-        element.scrollIntoView({ behavior: "smooth", block: "center" })
-        
-        // Calculer position de la flèche
-        const rect = element.getBoundingClientRect()
-        setArrowPosition({
-          top: rect.top + rect.height / 2,
-          left: rect.left + rect.width / 2,
-        })
+    // Navigation automatique si nécessaire
+    if (step.navigateTo) {
+      router.push(step.navigateTo)
+      // Attendre que la navigation soit terminée avant de chercher l'élément
+      setTimeout(() => {
+        findAndHighlightElement()
+      }, 500)
+    } else {
+      findAndHighlightElement()
+    }
+
+    function findAndHighlightElement() {
+      if (step.target) {
+        const element = document.querySelector(step.target) as HTMLElement
+        if (element) {
+          setTargetElement(element)
+          
+          // Highlight l'élément
+          element.classList.add("tutorial-highlight")
+          element.style.position = "relative"
+          element.style.zIndex = "9999"
+          
+          // Scroll vers l'élément
+          element.scrollIntoView({ behavior: "smooth", block: "center" })
+          
+          // Calculer position de la carte en fonction de l'élément et de la position
+          setTimeout(() => {
+            const rect = element.getBoundingClientRect()
+            const cardWidth = 400
+            const cardHeight = 300
+            const padding = 20
+            
+            let top = 0
+            let left = 0
+            
+            switch (step.position) {
+              case "top":
+                top = rect.top - cardHeight - padding
+                left = rect.left + rect.width / 2 - cardWidth / 2
+                break
+              case "bottom":
+                top = rect.bottom + padding
+                left = rect.left + rect.width / 2 - cardWidth / 2
+                break
+              case "left":
+                top = rect.top + rect.height / 2 - cardHeight / 2
+                left = rect.left - cardWidth - padding
+                break
+              case "right":
+                top = rect.top + rect.height / 2 - cardHeight / 2
+                left = rect.right + padding
+                break
+            }
+            
+            // S'assurer que la carte reste dans la fenêtre
+            top = Math.max(padding, Math.min(top, window.innerHeight - cardHeight - padding))
+            left = Math.max(padding, Math.min(left, window.innerWidth - cardWidth - padding))
+            
+            setCardPosition({ top, left })
+          }, 100)
+        }
       }
     }
 
@@ -130,19 +196,20 @@ export function InteractiveTutorial({ onComplete, onSkip }: InteractiveTutorialP
         targetElement.style.zIndex = ""
       }
     }
-  }, [currentStep, step.target])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentStep])
 
   const handleNext = () => {
     if (isLastStep) {
       onComplete()
     } else {
-      setCurrentStep((prev) => prev + 1)
+      setCurrentStep(currentStep + 1)
     }
   }
 
   const handlePrevious = () => {
     if (currentStep > 0) {
-      setCurrentStep((prev) => prev - 1)
+      setCurrentStep(currentStep - 1)
     }
   }
 
@@ -155,31 +222,14 @@ export function InteractiveTutorial({ onComplete, onSkip }: InteractiveTutorialP
       {/* Overlay sombre */}
       <div className="fixed inset-0 bg-black/60 z-[9998] animate-in fade-in duration-300" />
 
-      {/* Flèche pointant vers l'élément */}
-      {step.target && targetElement && (
-        <div
-          className="fixed z-[10000] pointer-events-none"
-          style={{
-            top: `${arrowPosition.top}px`,
-            left: `${arrowPosition.left}px`,
-            transform: "translate(-50%, -50%)",
-          }}
-        >
-          <div className="relative">
-            <div className="absolute -top-20 left-1/2 -translate-x-1/2 animate-bounce">
-              <div className="w-0 h-0 border-l-[20px] border-l-transparent border-r-[20px] border-r-transparent border-t-[30px] border-t-blue-500" />
-            </div>
-            <div className="absolute -top-16 left-1/2 -translate-x-1/2 w-2 h-16 bg-blue-500" />
-          </div>
-        </div>
-      )}
-
       {/* Carte du tutoriel */}
       <div
-        className={cn(
-          "fixed z-[10001] bg-white dark:bg-gray-900 rounded-lg shadow-2xl p-6 w-[400px] animate-in slide-in-from-bottom duration-300",
-          step.target ? "bottom-8 right-8" : "top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
-        )}
+        className="fixed z-[10001] bg-white dark:bg-gray-900 rounded-lg shadow-2xl p-6 w-[400px] transition-all duration-500 ease-out"
+        style={
+          step.target && targetElement
+            ? { top: `${cardPosition.top}px`, left: `${cardPosition.left}px` }
+            : { top: "50%", left: "50%", transform: "translate(-50%, -50%)" }
+        }
       >
         {/* Header */}
         <div className="flex items-start justify-between mb-4">

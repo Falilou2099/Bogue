@@ -136,7 +136,7 @@ export default function KnowledgeBasePage() {
           </p>
         </div>
         {(user?.role === "ADMIN" || user?.role === "MANAGER" || user?.role === "AGENT") && (
-          <Button asChild>
+          <Button asChild data-tutorial="kb-create">
             <Link href="/knowledge-base/new">
               <Plus className="mr-2 h-4 w-4" />
               Nouvel article
@@ -149,7 +149,7 @@ export default function KnowledgeBasePage() {
       <Card className="border-primary/20 bg-primary/5">
         <CardContent className="pt-6">
           <div className="flex items-center gap-4 max-w-2xl mx-auto">
-            <div className="relative flex-1">
+            <div className="relative flex-1" data-tutorial="kb-search">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
               <Input
                 placeholder="Rechercher dans la base de connaissances..."
