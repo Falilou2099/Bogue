@@ -99,7 +99,7 @@ export function Header({ onMenuClick }: { onMenuClick?: () => void }) {
           {/* Notifications */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="relative hover:bg-slate-700/50 text-slate-200">
+              <Button variant="ghost" size="icon" className="relative hover:bg-slate-700/50 text-slate-200" data-tutorial="notifications">
                 <Bell className="h-5 w-5" />
                 {unreadCount > 0 && (
                   <Badge
@@ -147,7 +147,7 @@ export function Header({ onMenuClick }: { onMenuClick?: () => void }) {
           {/* User menu */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="relative h-9 w-9 rounded-full">
+              <Button variant="ghost" className="relative h-9 w-9 rounded-full" data-tutorial="user-menu">
                 <Avatar className="h-9 w-9">
                   <AvatarImage src={user?.avatar} alt={user?.name} />
                   <AvatarFallback>
