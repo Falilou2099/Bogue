@@ -17,6 +17,9 @@ jest.mock('@/lib/prisma', () => ({
     ticket: {
       count: jest.fn(),
     },
+    user: {
+      findUnique: jest.fn(),
+    },
   },
 }))
 
@@ -51,9 +54,23 @@ describe('/api/categories', () => {
         },
       ]
 
+      ;(jwtVerify as jest.Mock).mockResolvedValue({
+        payload: { userId: 'user-1', role: 'agent' },
+      })
+      ;(prisma.user.findUnique as jest.Mock).mockResolvedValue({
+        id: 'user-1',
+        role: 'agent',
+      })
       ;(prisma.category.findMany as jest.Mock).mockResolvedValue(mockCategories)
 
       const request = new NextRequest('http://localhost:3000/api/categories')
+      
+      Object.defineProperty(request, 'cookies', {
+        value: {
+          get: jest.fn().mockReturnValue({ value: 'valid-token' }),
+        },
+      })
+
       const response = await getCategories(request)
       const data = await response.json()
 

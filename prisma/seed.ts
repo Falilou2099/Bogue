@@ -325,8 +325,10 @@ async function main() {
   // Créer les messages de tickets
   console.log("💬 Création des messages...")
   const messages = await Promise.all([
-    prisma.ticketMessage.create({
-      data: {
+    prisma.ticketMessage.upsert({
+      where: { id: "msg-1" },
+      update: {},
+      create: {
         id: "msg-1",
         ticketId: "TKT-001",
         senderId: user5.id,
@@ -335,8 +337,10 @@ async function main() {
         readBy: [user5.id, user3.id],
       },
     }),
-    prisma.ticketMessage.create({
-      data: {
+    prisma.ticketMessage.upsert({
+      where: { id: "msg-2" },
+      update: {},
+      create: {
         id: "msg-2",
         ticketId: "TKT-001",
         senderId: user3.id,
@@ -345,8 +349,10 @@ async function main() {
         readBy: [user5.id, user3.id],
       },
     }),
-    prisma.ticketMessage.create({
-      data: {
+    prisma.ticketMessage.upsert({
+      where: { id: "msg-3" },
+      update: {},
+      create: {
         id: "msg-3",
         ticketId: "TKT-001",
         senderId: user3.id,
@@ -355,8 +361,10 @@ async function main() {
         readBy: [user3.id, user2.id],
       },
     }),
-    prisma.ticketMessage.create({
-      data: {
+    prisma.ticketMessage.upsert({
+      where: { id: "msg-4" },
+      update: {},
+      create: {
         id: "msg-4",
         ticketId: "TKT-001",
         senderId: user5.id,
@@ -365,8 +373,10 @@ async function main() {
         readBy: [user5.id, user3.id],
       },
     }),
-    prisma.ticketMessage.create({
-      data: {
+    prisma.ticketMessage.upsert({
+      where: { id: "msg-5" },
+      update: {},
+      create: {
         id: "msg-5",
         ticketId: "TKT-001",
         senderId: user3.id,
@@ -381,16 +391,20 @@ async function main() {
   // Créer l'historique des tickets
   console.log("📜 Création de l'historique...")
   const history = await Promise.all([
-    prisma.ticketHistory.create({
-      data: {
+    prisma.ticketHistory.upsert({
+      where: { id: "hist-1" },
+      update: {},
+      create: {
         id: "hist-1",
         ticketId: "TKT-001",
         userId: user5.id,
         action: "Ticket créé",
       },
     }),
-    prisma.ticketHistory.create({
-      data: {
+    prisma.ticketHistory.upsert({
+      where: { id: "hist-2" },
+      update: {},
+      create: {
         id: "hist-2",
         ticketId: "TKT-001",
         userId: user2.id,
@@ -398,8 +412,10 @@ async function main() {
         newValue: "Marie Leroy",
       },
     }),
-    prisma.ticketHistory.create({
-      data: {
+    prisma.ticketHistory.upsert({
+      where: { id: "hist-3" },
+      update: {},
+      create: {
         id: "hist-3",
         ticketId: "TKT-001",
         userId: user3.id,
@@ -408,8 +424,10 @@ async function main() {
         newValue: "En cours",
       },
     }),
-    prisma.ticketHistory.create({
-      data: {
+    prisma.ticketHistory.upsert({
+      where: { id: "hist-4" },
+      update: {},
+      create: {
         id: "hist-4",
         ticketId: "TKT-001",
         userId: user3.id,
@@ -424,8 +442,10 @@ async function main() {
   // Créer les notifications
   console.log("🔔 Création des notifications...")
   const notifications = await Promise.all([
-    prisma.notification.create({
-      data: {
+    prisma.notification.upsert({
+      where: { id: "notif-1" },
+      update: {},
+      create: {
         id: "notif-1",
         userId: user1.id,
         type: "NOUVEAU_TICKET",
@@ -435,8 +455,10 @@ async function main() {
         read: false,
       },
     }),
-    prisma.notification.create({
-      data: {
+    prisma.notification.upsert({
+      where: { id: "notif-2" },
+      update: {},
+      create: {
         id: "notif-2",
         userId: user1.id,
         type: "SLA_ALERTE",
@@ -446,8 +468,10 @@ async function main() {
         read: false,
       },
     }),
-    prisma.notification.create({
-      data: {
+    prisma.notification.upsert({
+      where: { id: "notif-3" },
+      update: {},
+      create: {
         id: "notif-3",
         userId: user1.id,
         type: "NOUVEAU_MESSAGE",
@@ -457,8 +481,10 @@ async function main() {
         read: true,
       },
     }),
-    prisma.notification.create({
-      data: {
+    prisma.notification.upsert({
+      where: { id: "notif-4" },
+      update: {},
+      create: {
         id: "notif-4",
         userId: user1.id,
         type: "TICKET_ASSIGNE",
@@ -474,8 +500,10 @@ async function main() {
   // Créer les articles de la base de connaissances
   console.log("📚 Création des articles...")
   const articles = await Promise.all([
-    prisma.article.create({
-      data: {
+    prisma.article.upsert({
+      where: { id: "article-1" },
+      update: {},
+      create: {
         id: "article-1",
         title: "Comment réinitialiser son mot de passe",
         content: `# Comment réinitialiser son mot de passe
@@ -498,8 +526,10 @@ Cliquez sur le lien et définissez un nouveau mot de passe sécurisé.`,
         notHelpful: 5,
       },
     }),
-    prisma.article.create({
-      data: {
+    prisma.article.upsert({
+      where: { id: "article-2" },
+      update: {},
+      create: {
         id: "article-2",
         title: "Guide d'intégration API",
         content: `# Guide d'intégration API
@@ -521,8 +551,10 @@ Toutes les requêtes doivent inclure un header Authorization avec votre clé API
         notHelpful: 3,
       },
     }),
-    prisma.article.create({
-      data: {
+    prisma.article.upsert({
+      where: { id: "article-3" },
+      update: {},
+      create: {
         id: "article-3",
         title: "FAQ - Questions fréquentes sur la facturation",
         content: `# FAQ - Facturation

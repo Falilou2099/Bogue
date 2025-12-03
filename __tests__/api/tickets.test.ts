@@ -10,6 +10,12 @@ jest.mock('@/lib/prisma', () => ({
       count: jest.fn(),
       create: jest.fn(),
     },
+    category: {
+      findUnique: jest.fn(),
+    },
+    user: {
+      findMany: jest.fn(),
+    },
     notification: {
       createMany: jest.fn(),
     },
@@ -44,7 +50,18 @@ describe('/api/tickets', () => {
 
       ;(prisma.ticket.findMany as jest.Mock).mockResolvedValue(mockTickets)
 
-      const request = new NextRequest('http://localhost:3000/api/tickets')
+      const request = new NextRequest('http://localhost:3000/api/tickets', {
+        headers: {
+          Cookie: 'auth-token=valid-token',
+        },
+      })
+
+      Object.defineProperty(request, 'cookies', {
+        value: {
+          get: jest.fn().mockReturnValue({ value: 'valid-token' }),
+        },
+      })
+
       const response = await GET(request)
       const data = await response.json()
 
@@ -57,7 +74,18 @@ describe('/api/tickets', () => {
     it('devrait gérer les erreurs', async () => {
       ;(prisma.ticket.findMany as jest.Mock).mockRejectedValue(new Error('Database error'))
 
-      const request = new NextRequest('http://localhost:3000/api/tickets')
+      const request = new NextRequest('http://localhost:3000/api/tickets', {
+        headers: {
+          Cookie: 'auth-token=valid-token',
+        },
+      })
+
+      Object.defineProperty(request, 'cookies', {
+        value: {
+          get: jest.fn().mockReturnValue({ value: 'valid-token' }),
+        },
+      })
+
       const response = await GET(request)
       const data = await response.json()
 
@@ -93,8 +121,13 @@ describe('/api/tickets', () => {
         status: 'OUVERT',
         slaId: 'sla-2',
         tags: [],
+        category: { id: 'cat-1', name: 'Technique' },
+        createdBy: { id: 'user-1', name: 'Test User' },
+        sla: { id: 'sla-2', name: 'SLA Haute' },
       }
 
+      ;(prisma.category.findUnique as jest.Mock).mockResolvedValue({ id: 'cat-1', name: 'Technique' })
+      ;(prisma.user.findMany as jest.Mock).mockResolvedValue([{ id: 'user-1' }])
       ;(prisma.ticket.count as jest.Mock).mockResolvedValue(6)
       ;(prisma.ticket.create as jest.Mock).mockResolvedValue(createdTicket)
       ;(prisma.notification.createMany as jest.Mock).mockResolvedValue({ count: 1 })
@@ -188,6 +221,8 @@ describe('/api/tickets', () => {
           payload: { userId: 'user-1', role: 'agent' },
         })
 
+        ;(prisma.category.findUnique as jest.Mock).mockResolvedValue({ id: 'cat-1', name: 'Technique' })
+        ;(prisma.user.findMany as jest.Mock).mockResolvedValue([{ id: 'user-1' }])
         ;(prisma.ticket.count as jest.Mock).mockResolvedValue(0)
         ;(prisma.ticket.create as jest.Mock).mockImplementation((args) => Promise.resolve(args.data))
         ;(prisma.notification.createMany as jest.Mock).mockResolvedValue({ count: 1 })

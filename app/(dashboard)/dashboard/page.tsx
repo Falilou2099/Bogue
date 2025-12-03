@@ -11,7 +11,7 @@ import Link from "next/link"
 import { useAuth } from "@/lib/auth-context"
 import { usePermissions } from "@/hooks/use-permissions"
 import { UnassignedTicketsBanner } from "@/components/tickets/unassigned-tickets-banner"
-import { InteractiveTutorial } from "@/components/tutorial/interactive-tutorial"
+import { useTutorial } from "@/lib/tutorial-context"
 import { STATUS_LABELS, STATUS_COLORS, PRIORITY_LABELS, PRIORITY_COLORS } from "@/lib/constants"
 import type { Ticket as TicketType, DashboardStats } from "@/lib/types"
 import {
@@ -34,18 +34,11 @@ export default function DashboardPage() {
   const { user, hasRole } = useAuth()
   const { canView } = usePermissions()
   const isAdmin = hasRole(["admin", "manager"])
+  const { startTutorial } = useTutorial()
   
   const [tickets, setTickets] = useState<TicketType[]>([])
   const [dashboardStats, setDashboardStats] = useState<DashboardStats | null>(null)
   const [chartData, setChartData] = useState<any>(null)
-  const [showTutorial, setShowTutorial] = useState(false)
-
-  // Vérifier si l'utilisateur doit voir le tutoriel
-  useEffect(() => {
-    if (user && !user.hasCompletedTutorial) {
-      setShowTutorial(true)
-    }
-  }, [user])
 
   useEffect(() => {
     const fetchData = async () => {
@@ -125,33 +118,8 @@ export default function DashboardPage() {
       ]
     : baseStats
 
-  const handleCompleteTutorial = async () => {
-    try {
-      await fetch("/api/user/complete-tutorial", { method: "POST" })
-      setShowTutorial(false)
-    } catch (error) {
-      console.error("Erreur lors de la complétion du tutoriel:", error)
-    }
-  }
-
-  const handleSkipTutorial = async () => {
-    try {
-      await fetch("/api/user/complete-tutorial", { method: "POST" })
-      setShowTutorial(false)
-    } catch (error) {
-      console.error("Erreur lors du skip du tutoriel:", error)
-    }
-  }
-
   return (
     <div className="space-y-6 w-full max-w-full overflow-x-hidden">
-      {/* Tutoriel interactif */}
-      {showTutorial && (
-        <InteractiveTutorial
-          onComplete={handleCompleteTutorial}
-          onSkip={handleSkipTutorial}
-        />
-      )}
       {/* Bannière des tickets non assignés (visible uniquement pour agents et managers) */}
       <UnassignedTicketsBanner />
       
@@ -165,7 +133,7 @@ export default function DashboardPage() {
           <Button 
             size="sm" 
             variant="outline"
-            onClick={() => setShowTutorial(true)}
+            onClick={startTutorial}
           >
             <svg className="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />

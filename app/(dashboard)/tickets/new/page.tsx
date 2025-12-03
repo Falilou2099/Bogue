@@ -54,7 +54,9 @@ export default function NewTicketPage() {
       })
 
       if (!response.ok) {
-        throw new Error("Erreur lors de la création du ticket")
+        const errorData = await response.json().catch(() => ({}))
+        console.error("Erreur API:", response.status, errorData)
+        throw new Error(errorData.error || "Erreur lors de la création du ticket")
       }
 
       const data = await response.json()
@@ -66,10 +68,10 @@ export default function NewTicketPage() {
 
       router.push("/tickets")
     } catch (error) {
-      console.error("Erreur:", error)
+      console.error("Erreur complète:", error)
       toast({
         title: "Erreur",
-        description: "Une erreur est survenue lors de la création du ticket.",
+        description: error instanceof Error ? error.message : "Une erreur est survenue lors de la création du ticket.",
         variant: "destructive",
       })
     } finally {

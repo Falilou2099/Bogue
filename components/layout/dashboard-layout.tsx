@@ -1,12 +1,13 @@
 'use client'
 
 import type React from "react"
-import { useEffect, useState } from "react"
+import { useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Sidebar } from "./sidebar"
 import { Header } from "./header"
 import { useAuth } from "@/lib/auth-context"
-import { OnboardingTutorial } from "@/components/tutorial/onboarding-tutorial"
+import { useTutorial } from "@/lib/tutorial-context"
+import { InteractiveTutorial } from "@/components/tutorial/interactive-tutorial"
 
 interface DashboardLayoutProps {
   children: React.ReactNode
@@ -15,7 +16,7 @@ interface DashboardLayoutProps {
 export function DashboardLayout({ children }: DashboardLayoutProps) {
   const { user, isLoading } = useAuth()
   const router = useRouter()
-  const [showTutorial, setShowTutorial] = useState(false)
+  const { showTutorial, startTutorial, completeTutorial, setShowTutorial } = useTutorial()
 
   useEffect(() => {
     if (!isLoading && !user) {
@@ -26,26 +27,12 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   // Vérifier si l'utilisateur doit voir le tutoriel
   useEffect(() => {
     if (user && !user.hasCompletedTutorial) {
-      setShowTutorial(true)
-    }
-  }, [user])
-
-  const handleCompleteTutorial = async () => {
-    try {
-      const response = await fetch("/api/user/complete-tutorial", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-      })
-
-      if (response.ok) {
-        setShowTutorial(false)
-        // Rafraîchir les données utilisateur
-        window.location.reload()
+      const savedState = localStorage.getItem("tutorial-state")
+      if (!savedState) {
+        startTutorial()
       }
-    } catch (error) {
-      console.error("Erreur lors de la complétion du tutoriel:", error)
     }
-  }
+  }, [user, startTutorial])
 
   const handleSkipTutorial = async () => {
     try {
@@ -83,11 +70,10 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         <main className="flex-1 overflow-x-hidden overflow-y-auto bg-background p-6 w-full">{children}</main>
       </div>
 
-      {/* Tutoriel d'onboarding */}
+      {/* Tutoriel interactif */}
       {showTutorial && (
-        <OnboardingTutorial
-          userRole={user.role}
-          onComplete={handleCompleteTutorial}
+        <InteractiveTutorial
+          onComplete={completeTutorial}
           onSkip={handleSkipTutorial}
         />
       )}
