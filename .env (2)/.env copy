@@ -1,0 +1,30 @@
+# ==========================================
+# Configuration Neon Database
+# ==========================================
+# IMPORTANT: Remplacez ces valeurs par vos informations Neon
+# 
+# Pour obtenir ces informations depuis Neon:
+# 1. Connectez-vous à https://console.neon.tech
+# 2. Sélectionnez votre projet
+# 3. Allez dans "Connection Details"
+# 4. Copiez la "Connection string" (pooled) pour DATABASE_URL
+# 5. Copiez la "Connection string" (direct) pour DIRECT_URL
+#
+# Format attendu:
+# DATABASE_URL="postgresql://[user]:[password]@[host]/[database]?sslmode=require&pgbouncer=true"
+# DIRECT_URL="postgresql://[user]:[password]@[host]/[database]?sslmode=require"
+
+
+# Config Neon Database Production
+DATABASE_URL="postgresql://neondb_owner:npg_KwXk4Wv5RJth@ep-delicate-scene-agddr1fu-pooler.c-2.eu-central-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
+DIRECT_URL="postgresql://neondb_owner:npg_KwXk4Wv5RJth@ep-delicate-scene-agddr1fu-pooler.c-2.eu-central-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
+
+# Config Neon Database Development
+#DATABASE_URL="postgresql://neondb_owner:npg_KwXk4Wv5RJth@ep-plain-bush-ag9u5b02-pooler.c-2.eu-central-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
+#DIRECT_URL="postgresql://neondb_owner:npg_KwXk4Wv5RJth@ep-plain-bush-ag9u5b02-pooler.c-2.eu-central-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
+
+# ==========================================
+# Autres variables d'environnement
+# ==========================================
+NEXTAUTH_SECRET="1HRTT4BnKKuzBeVhUQcq7GrWMvx+jdNYtQvLE/OyYLw=="
+#NEXTAUTH_URL="http://localhost:3000"

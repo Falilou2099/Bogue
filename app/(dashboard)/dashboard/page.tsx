@@ -161,12 +161,24 @@ export default function DashboardPage() {
           <h1 className="text-2xl font-bold tracking-tight">Bonjour, {user?.name.split(" ")[0]}</h1>
           <p className="text-muted-foreground">Voici un aperçu de votre activité aujourd'hui</p>
         </div>
-        <Button size="sm" asChild data-tutorial="create-ticket">
-          <Link href="/tickets/new">
-            <Plus className="mr-2 h-4 w-4" />
-            Nouveau ticket
-          </Link>
-        </Button>
+        <div className="flex gap-2">
+          <Button 
+            size="sm" 
+            variant="outline"
+            onClick={() => setShowTutorial(true)}
+          >
+            <svg className="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            Tutoriel
+          </Button>
+          <Button size="sm" asChild data-tutorial="create-ticket">
+            <Link href="/tickets/new">
+              <Plus className="mr-2 h-4 w-4" />
+              Nouveau ticket
+            </Link>
+          </Button>
+        </div>
       </div>
 
       {/* Stats Cards */}
