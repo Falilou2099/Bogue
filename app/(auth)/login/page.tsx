@@ -52,12 +52,7 @@ export default function LoginPage() {
     }
   }
 
-  const demoLogins = [
-    { role: "Admin", email: "admin@ticketflow.com" },
-    { role: "Manager", email: "manager@ticketflow.com" },
-    { role: "Agent", email: "agent@ticketflow.com" },
-    { role: "Client", email: "client@example.com" },
-  ]
+
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
