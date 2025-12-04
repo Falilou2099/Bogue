@@ -16,7 +16,7 @@ Vous avez reçu un fichier `.env.zip` protégé par mot de passe.
 **Instructions** :
 1. Décompressez le fichier `.env.zip` avec le mot de passe fourni
 2. Placez le fichier `.env` à la racine du projet (même niveau que `package.json`)
-3. **NE MODIFIEZ PAS** les variables `DATABASE_URL` et `DIRECT_URL` (connexion à Neon DB déjà configurée)
+3. **Renseignez** les variables `DATABASE_URL` et `DIRECT_URL` (connexion à Neon DB déjà configurée.. je vous ai communiquer les urls)
 
 ---
 
