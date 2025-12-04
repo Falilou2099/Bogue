@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
-import { verifyAuth } from "@/lib/auth"
-import prisma from "@/lib/prisma"
+import { verifyAuth } from "@/lib/auth-middleware"
+import { prisma } from "@/lib/prisma"
 
 /**
  * API Route: Marquer le tutoriel comme terminé
@@ -12,7 +12,7 @@ export async function POST(request: NextRequest) {
   try {
     // Vérifier l'authentification
     const authResult = await verifyAuth(request)
-    if (!authResult.authenticated || !authResult.user) {
+    if (!authResult.success || !authResult.user) {
       return NextResponse.json(
         { error: "Non authentifié" },
         { status: 401 }
@@ -58,7 +58,7 @@ export async function DELETE(request: NextRequest) {
   try {
     // Vérifier l'authentification
     const authResult = await verifyAuth(request)
-    if (!authResult.authenticated || !authResult.user) {
+    if (!authResult.success || !authResult.user) {
       return NextResponse.json(
         { error: "Non authentifié" },
         { status: 401 }

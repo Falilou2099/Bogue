@@ -25,7 +25,7 @@ import {
 
 const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { name: "Tickets", href: "/tickets", icon: Ticket, badge: 3 },
+  { name: "Tickets", href: "/tickets", icon: Ticket },
   { name: "Base de connaissances", href: "/knowledge-base", icon: BookOpen },
 ]
 
@@ -94,6 +94,7 @@ export function Sidebar() {
               <Link
                 key={item.name}
                 href={item.href}
+                data-tutorial={item.dataTutorial}
                 className={cn(
                   "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors relative",
                   isActive

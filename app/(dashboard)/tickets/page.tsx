@@ -117,6 +117,7 @@ export default function TicketsPage() {
             variant={showFilters ? "default" : "outline"} 
             size="sm"
             onClick={() => setShowFilters(!showFilters)}
+            data-tutorial="filters-button"
           >
             <Filter className="mr-2 h-4 w-4" />
             Filtres
@@ -127,7 +128,7 @@ export default function TicketsPage() {
       {/* Filters */}
       <div className="space-y-4">
         <div className="flex flex-col gap-4 sm:flex-row">
-          <div className="relative flex-1">
+          <div className="relative flex-1" data-tutorial="search-bar">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="Rechercher un ticket (titre, ID)..."
@@ -231,14 +232,14 @@ export default function TicketsPage() {
             </div>
           </div>
           <Link href="/tickets/new">
-            <Button>
+            <Button data-tutorial="create-ticket">
               <Plus className="mr-2 h-4 w-4" />
               Nouveau ticket
             </Button>
           </Link>
         </div>
         <div className="flex items-center justify-between">
-          <TabsList>
+          <TabsList data-tutorial="tickets-tabs">
             <TabsTrigger value="tous">Tous</TabsTrigger>
             <TabsTrigger value="OUVERT">
               <div className="flex items-center gap-2">

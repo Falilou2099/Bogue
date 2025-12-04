@@ -61,9 +61,19 @@ describe('/api/users', () => {
         },
       ]
 
+      ;(jwtVerify as jest.Mock).mockResolvedValue({
+        payload: { userId: 'admin-1', role: 'admin' },
+      })
       ;(prisma.user.findMany as jest.Mock).mockResolvedValue(mockUsers)
 
       const request = new NextRequest('http://localhost:3000/api/users')
+      
+      Object.defineProperty(request, 'cookies', {
+        value: {
+          get: jest.fn().mockReturnValue({ value: 'admin-token' }),
+        },
+      })
+
       const response = await GET(request)
       const data = await response.json()
 
@@ -80,9 +90,19 @@ describe('/api/users', () => {
     })
 
     it('devrait gérer les erreurs de base de données', async () => {
+      ;(jwtVerify as jest.Mock).mockResolvedValue({
+        payload: { userId: 'admin-1', role: 'admin' },
+      })
       ;(prisma.user.findMany as jest.Mock).mockRejectedValue(new Error('Database error'))
 
       const request = new NextRequest('http://localhost:3000/api/users')
+      
+      Object.defineProperty(request, 'cookies', {
+        value: {
+          get: jest.fn().mockReturnValue({ value: 'admin-token' }),
+        },
+      })
+
       const response = await GET(request)
       const data = await response.json()
 
@@ -162,7 +182,8 @@ describe('/api/users', () => {
       const newUserData = {
         name: 'New User',
         email: 'newuser@example.com',
-        password: 'TestPassword123!',
+        password: 'Password123!',
+        role: 'AGENT',
       }
 
       const request = new NextRequest('http://localhost:3000/api/users', {
@@ -175,7 +196,7 @@ describe('/api/users', () => {
 
       expect(response.status).toBe(401)
       expect(data.success).toBe(false)
-      expect(data.error).toBe('Non authentifié')
+      expect(data.error).toBe('Non authentifié - Token manquant')
     })
 
     it('devrait rejeter si non admin', async () => {

@@ -15,32 +15,20 @@ const ROLE_ROUTES = {
   agent: [
     "/dashboard",
     "/tickets",
-    "/dashboard/analytics",
     "/knowledge-base",
-    "/dashboard/categories",
-    "/dashboard/sla",
-    "/dashboard/users",
     "/settings",
   ],
   manager: [
     "/dashboard",
     "/tickets",
-    "/dashboard/analytics",
     "/knowledge-base",
-    "/dashboard/categories",
-    "/dashboard/sla",
-    "/dashboard/users",
     "/admin",
     "/settings",
   ],
   admin: [
     "/dashboard",
     "/tickets",
-    "/dashboard/analytics",
     "/knowledge-base",
-    "/dashboard/categories",
-    "/dashboard/sla",
-    "/dashboard/users",
     "/admin",
     "/settings",
   ],
@@ -117,8 +105,14 @@ export async function proxy(request: NextRequest) {
     }
 
     return NextResponse.next()
-  } catch (error) {
+  } catch (error: any) {
     console.error("Erreur de vérification du token:", error)
+    
+    // Si c'est une erreur de signature (token créé avec un autre secret), on laisse passer vers login
+    if (error.code === 'ERR_JWS_SIGNATURE_VERIFICATION_FAILED' && pathname === '/login') {
+      return NextResponse.next()
+    }
+    
     // Token invalide, rediriger vers login
     const loginUrl = new URL("/login", request.url)
     loginUrl.searchParams.set("redirect", pathname)

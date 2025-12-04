@@ -5,6 +5,81 @@
 
 ---
 
+## 🚀 DÉMARRAGE RAPIDE POUR L'ÉVALUATION
+
+### **📦 Étape 1 : Récupérer le fichier .env**
+
+Vous avez reçu un fichier `.env.zip` protégé par mot de passe.
+
+**Mot de passe du fichier ZIP** : Le mot de passe que vous avez demandé pour le compte admin
+
+**Instructions** :
+1. Décompressez le fichier `.env.zip` avec le mot de passe fourni
+2. Placez le fichier `.env` à la racine du projet (même niveau que `package.json`)
+3. **Renseignez** les variables `DATABASE_URL` et `DIRECT_URL` (connexion à Neon DB déjà configurée.. je vous ai communiquer les urls)
+
+---
+
+### **🔐 Étape 2 : Générer votre NEXTAUTH_SECRET**
+
+**IMPORTANT** : Pour des raisons de sécurité, vous devez générer votre propre `NEXTAUTH_SECRET`.
+
+**Commande à exécuter** :
+```bash
+openssl rand -base64 32
+```
+
+**Ensuite** :
+1. Copiez le résultat de la commande
+2. Ouvrez le fichier `.env`
+3. Remplacez la valeur de `NEXTAUTH_SECRET` par votre nouvelle clé
+4. Sauvegardez le fichier
+
+**Exemple** :
+```env
+NEXTAUTH_SECRET="votre_nouvelle_clé_générée_ici"
+```
+
+---
+
+### **📥 Étape 3 : Installer et démarrer l'application**
+
+```bash
+# Installer les dépendances
+npm install
+
+# Générer le client Prisma
+npx prisma generate
+
+# Démarrer l'application en mode développement
+npm run dev
+```
+
+L'application sera accessible sur **http://localhost:3000**
+
+---
+
+### **👤 Étape 4 : Se connecter**
+
+**Compte Admin déjà créé** :
+- **Email** : `admin@ticketflow.com`
+- **Mot de passe** : Le mot de passe que vous avez demandé (celui du fichier ZIP)
+
+**Tutoriel interactif** : Une fois connecté, cliquez sur le bouton **"Tutoriel"** dans le dashboard pour découvrir l'application.
+
+---
+
+### **📊 Base de données**
+
+La base de données **Neon PostgreSQL** est déjà configurée et contient :
+- ✅ Le compte admin
+- ✅ Les catégories de tickets
+- ✅ Des données de démonstration
+
+**Vous n'avez rien à configurer** - tout est prêt à l'emploi !
+
+---
+
 ## 📋 Conformité au Cahier des Charges
 
 ### ✅ **Fonctionnalités Implémentées (100%)**

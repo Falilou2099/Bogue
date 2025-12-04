@@ -13,6 +13,7 @@
     "test:ci": "jest --ci --coverage --maxWorkers=2",
     "db:seed": "tsx prisma/seed.ts",
     "db:create-admin": "node scripts/create-admin.js",
+    "db:quick-admin": "node scripts/create-default-admin.js",
     "sonar": "./sonar-scanner-6.2.1.4610-linux-x64/bin/sonar-scanner",
     "postinstall": "prisma generate"
   },

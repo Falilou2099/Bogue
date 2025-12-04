@@ -69,7 +69,7 @@ const categoryColors: Record<string, string> = {
 }
 
 export default function KnowledgeBasePage() {
-  const { user } = useAuth()
+  const { user, hasRole } = useAuth()
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState("all")
@@ -135,21 +135,21 @@ export default function KnowledgeBasePage() {
             Trouvez des réponses à vos questions et apprenez à utiliser la plateforme
           </p>
         </div>
-        {(user?.role === "ADMIN" || user?.role === "MANAGER" || user?.role === "AGENT") && (
-          <Button asChild>
+        
+          <Button size="lg" className="bg-primary hover:bg-primary/90 shadow-lg" asChild data-tutorial="kb-create">
             <Link href="/knowledge-base/new">
-              <Plus className="mr-2 h-4 w-4" />
-              Nouvel article
+              <Plus className="mr-2 h-5 w-5" />
+              Créer un nouvel article
             </Link>
           </Button>
-        )}
+        
       </div>
 
       {/* Search & View Toggle */}
       <Card className="border-primary/20 bg-primary/5">
         <CardContent className="pt-6">
-          <div className="flex items-center gap-4 max-w-2xl mx-auto">
-            <div className="relative flex-1">
+          <div className="flex items-center gap-4 max-w-3xl mx-auto">
+            <div className="relative flex-1" data-tutorial="kb-search">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
               <Input
                 placeholder="Rechercher dans la base de connaissances..."
@@ -216,7 +216,7 @@ export default function KnowledgeBasePage() {
               </CardContent>
             </Card>
           ) : viewMode === "grid" ? (
-            <div className="grid gap-4 md:grid-cols-2">
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {filteredArticles.map((article) => (
                 <Card key={article.id} className="hover:shadow-md transition-shadow">
                   <CardContent className="p-6">
@@ -246,7 +246,7 @@ export default function KnowledgeBasePage() {
                           </span>
                         </div>
                       </Link>
-                      {(user?.role === "ADMIN" || user?.role === "MANAGER" || user?.role === "AGENT") && (
+                      {user && (hasRole(["ADMIN", "MANAGER", "AGENT"])) && (
                         <div className="flex gap-2 pt-2 border-t">
                           <Button
                             variant="outline"
@@ -318,7 +318,7 @@ export default function KnowledgeBasePage() {
                           </span>
                         </div>
                       </Link>
-                      {(user?.role === "ADMIN" || user?.role === "MANAGER" || user?.role === "AGENT") && (
+                      {user && (hasRole(["ADMIN", "MANAGER", "AGENT"])) && (
                         <div className="flex gap-2">
                           <Button
                             variant="outline"

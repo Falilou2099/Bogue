@@ -46,6 +46,10 @@ sonar-scanner-cli-*.zip
 
 /lib/generated/prisma
 
+/sonar-scanner-*/
+sonar-project.properties
+.sonar-scanner.properties
+
 # tokens
 token.git
 .token.git

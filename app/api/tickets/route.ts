@@ -98,6 +98,18 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Vérifier que la catégorie existe
+    const categoryExists = await prisma.category.findUnique({
+      where: { id: categoryId }
+    })
+
+    if (!categoryExists) {
+      return NextResponse.json(
+        { success: false, error: `La catégorie ${categoryId} n'existe pas. Veuillez créer les catégories d'abord.` },
+        { status: 400 }
+      )
+    }
+
     // Déterminer le SLA en fonction de la priorité
     let slaId = "sla-3" // Par défaut MOYENNE
     switch(priority) {
@@ -172,10 +184,12 @@ export async function POST(request: NextRequest) {
       { success: true, ticket },
       { status: 201 }
     )
-  } catch (error) {
+  } catch (error: any) {
     console.error("Erreur lors de la création du ticket:", error)
+    console.error("Stack trace:", error.stack)
+    console.error("Message:", error.message)
     return NextResponse.json(
-      { success: false, error: "Erreur lors de la création du ticket" },
+      { success: false, error: error.message || "Erreur lors de la création du ticket" },
       { status: 500 }
     )
   }
