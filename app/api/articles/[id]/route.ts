@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
+import DOMPurify from 'isomorphic-dompurify';
 
 export async function GET(
   request: NextRequest,
@@ -69,11 +70,16 @@ export async function PATCH(
     const body = await request.json()
     const { title, content, categoryId } = body
 
+    const sanitizedContent = content ? DOMPurify.sanitize(content, {
+      ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'h1', 'h2', 'h3', 'ul', 'ol', 'li'],
+      ALLOWED_ATTR: []
+    }) : undefined;
+
     const article = await prisma.article.update({
       where: { id },
       data: {
         ...(title && { title }),
-        ...(content && { content }),
+        ...(sanitizedContent && { content: sanitizedContent }),
         ...(categoryId && { categoryId }),
       },
       include: {

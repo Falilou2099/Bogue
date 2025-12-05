@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ArrowLeft, Save, Eye } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import Link from "next/link"
+import DOMPurify from 'isomorphic-dompurify';
 
 export default function EditArticlePage() {
   const router = useRouter()
@@ -212,15 +213,17 @@ export default function EditArticlePage() {
                   <h1>{formData.title || "Titre de l'article"}</h1>
                   <div 
                     dangerouslySetInnerHTML={{ 
-                      __html: formData.content
+                      __html: DOMPurify.sanitize(formData.content
                         .replace(/^# (.+)$/gm, '<h1>$1</h1>')
                         .replace(/^## (.+)$/gm, '<h2>$1</h2>')
                         .replace(/^### (.+)$/gm, '<h3>$1</h3>')
                         .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
                         .replace(/\*(.+?)\*/g, '<em>$1</em>')
                         .replace(/^- (.+)$/gm, '<li>$1</li>')
-                        .replace(/\n/g, '<br>')
-                        || "Le contenu de l'article apparaîtra ici..." 
+                        .replace(/\n/g, '<br>'), {
+                        ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'h1', 'h2', 'h3', 'ul', 'ol', 'li'],
+                        ALLOWED_ATTR: []
+                      }) || "Le contenu de l'article apparaîtra ici..." 
                     }} 
                   />
                 </div>

@@ -17,6 +17,8 @@ import {
   User,
 } from "lucide-react"
 import type { Article } from "@/lib/types"
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 export default function ArticlePage() {
   const params = useParams()
@@ -156,8 +158,11 @@ export default function ArticlePage() {
           <div
             className="prose prose-xl prose-slate dark:prose-invert max-w-none leading-relaxed"
             style={{ fontSize: '1.25rem', lineHeight: '1.9' }}
-            dangerouslySetInnerHTML={{ __html: article.content }}
-          />
+          >
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>
+              {article.content}
+            </ReactMarkdown>
+          </div>
         </CardContent>
       </Card>
 

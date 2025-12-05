@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { requireAuth } from "@/lib/auth-middleware"
+import DOMPurify from 'isomorphic-dompurify';
 
 export async function GET(request: NextRequest) {
   try {
@@ -64,10 +65,15 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    const sanitizedContent = DOMPurify.sanitize(content, {
+      ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'h1', 'h2', 'h3', 'ul', 'ol', 'li'],
+      ALLOWED_ATTR: []
+    });
+
     const article = await prisma.article.create({
       data: {
         title,
-        content,
+        content: sanitizedContent,
         categoryId,
         authorId: user.id,
       },
