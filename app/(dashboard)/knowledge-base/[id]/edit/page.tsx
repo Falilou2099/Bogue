@@ -11,7 +11,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ArrowLeft, Save, Eye } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import Link from "next/link"
-import DOMPurify from 'isomorphic-dompurify';
+import { sanitizeHTML } from '@/lib/sanitize';
+import ReactMarkdown from "react-markdown"
+import remarkGfm from "remark-gfm"
 
 export default function EditArticlePage() {
   const router = useRouter()
@@ -212,20 +214,12 @@ export default function EditArticlePage() {
                 <div className="prose prose-sm dark:prose-invert max-w-none">
                   <h1>{formData.title || "Titre de l'article"}</h1>
                   <div 
-                    dangerouslySetInnerHTML={{ 
-                      __html: DOMPurify.sanitize(formData.content
-                        .replace(/^# (.+)$/gm, '<h1>$1</h1>')
-                        .replace(/^## (.+)$/gm, '<h2>$1</h2>')
-                        .replace(/^### (.+)$/gm, '<h3>$1</h3>')
-                        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-                        .replace(/\*(.+?)\*/g, '<em>$1</em>')
-                        .replace(/^- (.+)$/gm, '<li>$1</li>')
-                        .replace(/\n/g, '<br>'), {
-                        ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'h1', 'h2', 'h3', 'ul', 'ol', 'li'],
-                        ALLOWED_ATTR: []
-                      }) || "Le contenu de l'article apparaîtra ici..." 
-                    }} 
-                  />
+
+
+<ReactMarkdown remarkPlugins={[remarkGfm]}>
+{formData.content}
+</ReactMarkdown>
+                  
                 </div>
               ) : (
                 <div className="text-muted-foreground text-center py-8">
