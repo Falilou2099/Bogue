@@ -213,13 +213,9 @@ export default function EditArticlePage() {
               {preview ? (
                 <div className="prose prose-sm dark:prose-invert max-w-none">
                   <h1>{formData.title || "Titre de l'article"}</h1>
-                  <div 
-
-
-<ReactMarkdown remarkPlugins={[remarkGfm]}>
-{formData.content}
-</ReactMarkdown>
-                  
+                  <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                    {formData.content}
+                  </ReactMarkdown>
                 </div>
               ) : (
                 <div className="text-muted-foreground text-center py-8">
